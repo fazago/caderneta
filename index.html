@@ -1,0 +1,1666 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Caderneta — Orçamento Doméstico</title>
+<meta name="theme-color" content="#0A0F16">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Archivo:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  color-scheme:dark;
+  --paper:#0A0F16; --card:#101822; --panel:#0D141D;
+  --ink:#E6EDF3; --ink-soft:#8B98A5; --line:#1E2A36; --line-soft:#16202B;
+  --green:#16C784; --green-soft:rgba(22,199,132,.13);
+  --red:#EA3943; --red-soft:rgba(234,57,67,.13);
+  --gold:#F0B90B; --gold-soft:rgba(240,185,11,.12);
+  --blue:#58A6FF;
+  --radius:10px; --shadow:0 1px 0 rgba(255,255,255,.03) inset, 0 8px 24px rgba(0,0,0,.35);
+  --mono:'IBM Plex Mono',ui-monospace,monospace;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Archivo',system-ui,sans-serif;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+html{font-size:16px}
+body{background:var(--paper);color:var(--ink);font-family:var(--body);min-height:100vh;
+  background-image:linear-gradient(rgba(88,166,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(88,166,255,.025) 1px,transparent 1px);
+  background-size:36px 36px}
+button{font-family:inherit;cursor:pointer}
+input,select{font-family:inherit;font-size:.95rem}
+::selection{background:rgba(22,199,132,.35)}
+
+/* ---------- Fita de cotações (ticker) ---------- */
+.tape{background:#070B11;border-bottom:1px solid var(--line);overflow:hidden;white-space:nowrap;position:relative}
+.tape-track{display:inline-block;padding:.42rem 0;font-family:var(--mono);font-size:.78rem;animation:tape 38s linear infinite;will-change:transform}
+.tape:hover .tape-track{animation-play-state:paused}
+@keyframes tape{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.tape .ti{display:inline-block;margin:0 1.3rem;color:var(--ink-soft);letter-spacing:.04em}
+.tape .ti b{color:var(--ink);font-weight:600;margin-left:.4rem}
+.tape .up{color:var(--green)} .tape .down{color:var(--red)} .tape .flat{color:var(--gold)}
+@media (prefers-reduced-motion:reduce){.tape{overflow-x:auto}.tape-track{animation:none}}
+
+/* ---------- Header ---------- */
+header{background:linear-gradient(180deg,#0C131C 0%,#0A0F16 100%);border-bottom:1px solid var(--line);padding:1.2rem 1.5rem 0}
+.head-inner{max-width:1060px;margin:0 auto}
+.brand{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap}
+.brand h1{font-family:var(--display);font-weight:700;font-size:1.3rem;letter-spacing:.06em;text-transform:uppercase}
+.brand small{color:var(--ink-soft);font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;border:1px solid var(--line);padding:.15rem .55rem;border-radius:4px}
+.live{display:inline-flex;align-items:center;gap:.35rem;color:var(--green);font-size:.7rem;letter-spacing:.12em;font-family:var(--mono)}
+.live i{width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s ease infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.month-row{display:flex;align-items:center;justify-content:space-between;margin-top:1rem;flex-wrap:wrap;gap:.8rem}
+.month-nav{display:flex;align-items:center;gap:.4rem}
+.month-nav button{background:var(--panel);border:1px solid var(--line);color:var(--ink);width:34px;height:34px;border-radius:7px;font-size:1rem;transition:border-color .15s,background .15s}
+.month-nav button:hover{border-color:var(--green);background:#121C28}
+.month-nav button:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid var(--green);outline-offset:2px}
+.month-label{font-family:var(--display);font-weight:600;font-size:1.1rem;min-width:200px;text-align:center;text-transform:uppercase;letter-spacing:.06em}
+.btn-today{background:transparent;border:none;color:var(--ink-soft);font-size:.78rem;text-decoration:underline}
+.btn-today:hover{color:var(--green)}
+.ledger{display:flex;gap:2.2rem;align-items:flex-end;flex-wrap:wrap;margin-top:1.15rem}
+.ledger .big{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.ledger .saldo .big{font-size:2.45rem;font-weight:600;letter-spacing:-.03em;text-shadow:0 0 24px rgba(22,199,132,.25)}
+.ledger .saldo .big.neg{color:var(--red);text-shadow:0 0 24px rgba(234,57,67,.3)}
+.ledger .saldo .big.pos{color:var(--green)}
+.ledger .saldo .arr{font-size:.5em;vertical-align:.35em;letter-spacing:0}
+.ledger .mini .big{font-size:1.05rem;font-weight:500}
+.ledger label{display:block;font-size:.66rem;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.2rem;font-family:var(--mono)}
+#spark{margin-left:auto;min-width:250px}
+#spark svg{display:block}
+nav.tabs{max-width:1060px;margin:1.25rem auto 0;display:flex;gap:.15rem;overflow-x:auto}
+nav.tabs button{background:transparent;border:none;color:var(--ink-soft);padding:.7rem 1rem;font-size:.86rem;font-weight:600;border-bottom:2px solid transparent;white-space:nowrap;letter-spacing:.03em;text-transform:uppercase;font-family:var(--display)}
+nav.tabs button:hover{color:var(--ink)}
+nav.tabs button.active{color:var(--green);border-bottom-color:var(--green)}
+
+/* ---------- Layout ---------- */
+main{max-width:1060px;margin:1.4rem auto 4rem;padding:0 1.5rem}
+section.tab{display:none}
+section.tab.active{display:block;animation:fade .18s ease}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.grid{display:grid;gap:1.1rem}
+.grid.two{grid-template-columns:1fr 1fr}
+@media(max-width:760px){.grid.two{grid-template-columns:1fr}.ledger .saldo .big{font-size:1.9rem}#spark{display:none}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.2rem 1.3rem;position:relative}
+.card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius) var(--radius) 0 0;background:linear-gradient(90deg,var(--green),transparent 40%)}
+.card h2{font-family:var(--display);font-size:.92rem;font-weight:600;margin-bottom:.95rem;display:flex;align-items:center;justify-content:space-between;letter-spacing:.05em;text-transform:uppercase}
+.muted{color:var(--ink-soft);font-size:.85rem}
+
+/* ---------- Botões ---------- */
+.btn{border:none;border-radius:7px;padding:.6rem 1rem;font-weight:600;font-size:.86rem;transition:filter .15s,border-color .15s;letter-spacing:.02em}
+.btn:hover{filter:brightness(1.15)}
+.btn-primary{background:var(--green);color:#04110B}
+.btn-ghost{background:var(--panel);border:1px solid var(--line);color:var(--ink)}
+.btn-ghost:hover{border-color:var(--green)}
+.btn-danger{background:var(--red-soft);color:var(--red);border:1px solid rgba(234,57,67,.3)}
+.fab{position:fixed;right:1.4rem;bottom:1.4rem;width:56px;height:56px;border-radius:50%;background:var(--green);color:#04110B;font-size:1.7rem;border:none;box-shadow:0 0 0 1px rgba(22,199,132,.4),0 8px 28px rgba(22,199,132,.35);z-index:50;line-height:1}
+
+/* ---------- Lista de lançamentos ---------- */
+.filters{display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:1rem}
+.filters input,.filters select{padding:.55rem .7rem;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink)}
+.filters input[type=search]{flex:1;min-width:160px}
+table.lanc{width:100%;border-collapse:collapse;font-size:.9rem}
+table.lanc th{text-align:left;font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-soft);padding:.5rem .6rem;border-bottom:1px solid var(--line);font-family:var(--mono)}
+table.lanc td{padding:.6rem;border-bottom:1px solid var(--line-soft);vertical-align:middle}
+table.lanc tr:hover td{background:#121B26}
+td.val{font-family:var(--mono);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;font-weight:500}
+td.val.in{color:var(--green)} td.val.out{color:var(--red)}
+.chip{display:inline-block;font-size:.7rem;font-weight:600;padding:.16rem .55rem;border-radius:4px;background:var(--panel);border:1px solid var(--line);color:var(--ink-soft)}
+.dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-right:.35rem;vertical-align:1px}
+.pend{opacity:.5}
+.row-actions{display:flex;gap:.3rem;justify-content:flex-end}
+.icon-btn{background:transparent;border:none;font-size:1rem;padding:.25rem .35rem;border-radius:5px;color:var(--ink-soft)}
+.icon-btn:hover{background:var(--panel);color:var(--green)}
+.empty{padding:2.5rem 1rem;text-align:center;color:var(--ink-soft)}
+.empty strong{display:block;font-family:var(--display);font-size:1.05rem;color:var(--ink);margin-bottom:.3rem}
+
+/* ---------- Orçamento ---------- */
+.budget-item{margin-bottom:1.05rem}
+.budget-item .top{display:flex;justify-content:space-between;font-size:.87rem;margin-bottom:.3rem;gap:.5rem;flex-wrap:wrap}
+.budget-item .nums{font-family:var(--mono);font-variant-numeric:tabular-nums;font-size:.82rem;color:var(--ink-soft)}
+.bar{height:8px;border-radius:3px;background:var(--panel);overflow:hidden;border:1px solid var(--line-soft)}
+.bar i{display:block;height:100%;border-radius:2px;background:var(--green);transition:width .3s;box-shadow:0 0 10px rgba(22,199,132,.4)}
+.bar i.warn{background:var(--gold);box-shadow:0 0 10px rgba(240,185,11,.4)}
+.bar i.over{background:var(--red);box-shadow:0 0 10px rgba(234,57,67,.4)}
+.budget-edit{display:flex;gap:.5rem;align-items:center;margin-top:.4rem}
+.budget-edit input{width:130px;padding:.4rem .6rem;border:1px solid var(--line);border-radius:6px;font-family:var(--mono);background:var(--panel);color:var(--ink)}
+
+/* ---------- Gráficos ---------- */
+.legend{display:flex;flex-direction:column;gap:.45rem;font-size:.84rem}
+.legend .li{display:flex;align-items:center;gap:.5rem}
+.legend .li b{margin-left:auto;font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums;color:var(--ink-soft)}
+.donut-wrap{display:flex;gap:1.4rem;align-items:center;flex-wrap:wrap}
+.bars6{display:flex;gap:.9rem;align-items:flex-end;height:150px;padding-top:.5rem}
+.bars6 .col{flex:1;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;gap:.3rem;height:100%}
+.bars6 .duo{display:flex;gap:3px;align-items:flex-end;height:100%;width:100%;justify-content:center}
+.bars6 .b{width:38%;max-width:26px;border-radius:3px 3px 0 0;min-height:2px}
+.bars6 .b.in{background:linear-gradient(180deg,#16C784 0%,rgba(22,199,132,.55) 60%,rgba(22,199,132,.12) 100%);box-shadow:0 0 12px rgba(22,199,132,.45),0 -1px 6px rgba(22,199,132,.6)}
+.bars6 .b.out{background:linear-gradient(180deg,#EA3943 0%,rgba(234,57,67,.55) 60%,rgba(234,57,67,.12) 100%);box-shadow:0 0 12px rgba(234,57,67,.45),0 -1px 6px rgba(234,57,67,.6)}
+.bars6 .lbl{font-size:.66rem;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono)}
+
+/* ---------- Modal ---------- */
+dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:440px;width:92vw;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(0,0,0,.6)}
+dialog::backdrop{background:rgba(4,8,12,.7);backdrop-filter:blur(2px)}
+.modal-body{padding:1.4rem 1.5rem 1.5rem}
+.modal-body h3{font-family:var(--display);font-size:1.05rem;margin-bottom:1rem;letter-spacing:.04em;text-transform:uppercase}
+.field{margin-bottom:.85rem}
+.field label{display:block;font-size:.7rem;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-soft);margin-bottom:.3rem;font-family:var(--mono)}
+.field input,.field select{width:100%;padding:.6rem .7rem;border:1px solid var(--line);border-radius:7px;background:var(--panel);color:var(--ink)}
+.seg{display:flex;border:1px solid var(--line);border-radius:7px;overflow:hidden}
+.seg button{flex:1;padding:.6rem;border:none;background:var(--panel);font-weight:600;font-size:.88rem;color:var(--ink-soft)}
+.seg button.on.despesa{background:var(--red-soft);color:var(--red)}
+.seg button.on.receita{background:var(--green-soft);color:var(--green)}
+.check{display:flex;align-items:center;gap:.5rem;font-size:.88rem}
+.check input{width:auto;accent-color:var(--green)}
+input[type=checkbox],input[type=radio]{accent-color:var(--green)}
+.modal-actions{display:flex;gap:.6rem;justify-content:flex-end;margin-top:1.2rem}
+.toast{position:fixed;left:50%;bottom:1.4rem;transform:translateX(-50%);background:#1B2530;color:var(--ink);border:1px solid var(--line);padding:.7rem 1.2rem;border-radius:7px;font-size:.86rem;box-shadow:0 10px 40px rgba(0,0,0,.5);opacity:0;pointer-events:none;transition:opacity .25s;z-index:99;font-family:var(--mono)}
+.toast.show{opacity:1}
+.backup-actions{display:flex;gap:.7rem;flex-wrap:wrap;margin-top:.8rem}
+.notice{background:var(--gold-soft);border:1px solid rgba(240,185,11,.35);color:var(--gold);border-radius:8px;padding:.7rem .9rem;font-size:.84rem;margin-bottom:1rem;display:none}
+
+/* ---------- Orientador ---------- */
+.advice{border:1px solid var(--line);border-left:3px solid var(--ink-soft);border-radius:8px;background:var(--card);padding:1rem 1.15rem;margin-bottom:.9rem;box-shadow:var(--shadow)}
+.advice h3{font-family:var(--display);font-size:.95rem;margin-bottom:.4rem;letter-spacing:.03em}
+.advice p,.advice li{font-size:.88rem;color:var(--ink-soft);line-height:1.55}
+.advice ul{margin:.45rem 0 0 1.15rem}
+.advice .vv{font-family:var(--mono);font-weight:600;font-variant-numeric:tabular-nums;color:var(--ink)}
+.advice.alert{border-left-color:var(--red)} .advice.alert h3{color:var(--red)}
+.advice.warn{border-left-color:var(--gold)} .advice.warn h3{color:var(--gold)}
+.advice.ok{border-left-color:var(--green)} .advice.ok h3{color:var(--green)}
+.diag{display:inline-block;font-weight:700;padding:.2rem .75rem;border-radius:4px;font-size:.74rem;font-family:var(--mono);letter-spacing:.08em;text-transform:uppercase}
+.diag.alert{background:var(--red-soft);color:var(--red);border:1px solid rgba(234,57,67,.35)}
+.diag.warn{background:var(--gold-soft);color:var(--gold);border:1px solid rgba(240,185,11,.35)}
+.diag.ok{background:var(--green-soft);color:var(--green);border:1px solid rgba(22,199,132,.35)}
+.diag.info{background:var(--panel);color:var(--ink-soft);border:1px solid var(--line)}
+
+/* ---------- Caixinhas ---------- */
+.goal{border:1px solid var(--line);border-radius:8px;padding:1rem 1.15rem;margin-bottom:.9rem;background:var(--card);box-shadow:var(--shadow)}
+.goal .top{display:flex;justify-content:space-between;align-items:baseline;gap:.6rem;flex-wrap:wrap}
+.goal h3{font-family:var(--display);font-size:.98rem;letter-spacing:.02em}
+.goal .nums{font-family:var(--mono);font-size:.84rem;color:var(--ink-soft);font-variant-numeric:tabular-nums}
+.goal .bar{margin:.55rem 0 .3rem}
+.goal .meta{font-size:.8rem;color:var(--ink-soft)}
+.goal .acts{display:flex;gap:.4rem;margin-top:.65rem;flex-wrap:wrap}
+.btn.sm{padding:.4rem .75rem;font-size:.76rem}
+.bar i.gold{background:var(--gold);box-shadow:0 0 10px rgba(240,185,11,.4)}
+.mini-goal{margin-bottom:.8rem}
+.mini-goal .top{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:.25rem;gap:.5rem}
+.mini-goal .top b{font-family:var(--mono);font-weight:500;color:var(--ink-soft)}
+
+/* ---------- Investir ---------- */
+.quiz .q{margin-bottom:1rem}
+.quiz .q>p{font-weight:600;font-size:.9rem;margin-bottom:.35rem}
+.quiz label{display:flex;gap:.5rem;align-items:flex-start;font-size:.87rem;color:var(--ink-soft);padding:.22rem 0;cursor:pointer}
+.quiz label:hover{color:var(--ink)}
+.alloc-row{margin-bottom:.85rem}
+.alloc-row .top{display:flex;justify-content:space-between;font-size:.86rem;margin-bottom:.25rem;gap:.5rem}
+.alloc-row .top b{font-family:var(--mono);font-variant-numeric:tabular-nums}
+.alloc-row .ex{font-size:.76rem;color:var(--ink-soft);margin-top:.2rem}
+.scn-inputs{display:flex;gap:.7rem;flex-wrap:wrap;align-items:flex-end}
+.scn-inputs .field{margin:0}
+.scn-inputs input{width:120px;font-family:var(--mono)}
+.disclaimer{background:var(--panel);border:1px dashed var(--line);border-radius:8px;padding:.7rem .9rem;font-size:.78rem;color:var(--ink-soft);margin-top:1rem;line-height:1.5}
+</style>
+</head>
+<body>
+
+<div class="tape"><div class="tape-track" id="tapeTrack"></div></div>
+<header>
+  <div class="head-inner">
+    <div class="brand">
+      <h1>Caderneta</h1><small>orçamento doméstico</small>
+      <span class="live"><i></i>AO VIVO</span>
+    </div>
+    <div class="month-row">
+      <div class="month-nav">
+        <button id="prevM" aria-label="Mês anterior">‹</button>
+        <span class="month-label" id="monthLabel"></span>
+        <button id="nextM" aria-label="Próximo mês">›</button>
+      </div>
+      <button class="btn-today" id="btnToday">voltar ao mês atual</button>
+    </div>
+    <div class="ledger">
+      <div class="saldo"><label>Saldo do mês</label><span class="big" id="kSaldo">R$ 0,00</span></div>
+      <div class="mini"><label>Receitas</label><span class="big" style="color:var(--green)" id="kRec">R$ 0,00</span></div>
+      <div class="mini"><label>Despesas</label><span class="big" style="color:var(--red)" id="kDes">R$ 0,00</span></div>
+      <div class="mini"><label>Pendentes</label><span class="big" style="color:var(--gold)" id="kPend">R$ 0,00</span></div>
+      <div id="spark"></div>
+    </div>
+    <nav class="tabs">
+      <button data-tab="visao" class="active">Visão geral</button>
+      <button data-tab="lanc">Lançamentos</button>
+      <button data-tab="auto">Fixas &amp; Extrato</button>
+      <button data-tab="orc">Orçamento</button>
+      <button data-tab="orient">Orientador</button>
+      <button data-tab="caixa">Caixinhas</button>
+      <button data-tab="invest">Investir</button>
+      <button data-tab="backup">Backup</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <div class="notice" id="storageNotice">⚠ Armazenamento local indisponível neste ambiente — os dados não serão salvos ao fechar a página. Abra o arquivo diretamente no seu navegador para que tudo fique gravado.</div>
+
+  <!-- VISÃO GERAL -->
+  <section class="tab active" id="tab-visao">
+    <div class="grid two">
+      <div class="card">
+        <h2>Despesas por categoria</h2>
+        <div class="donut-wrap">
+          <div id="donut"></div>
+          <div class="legend" id="donutLegend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <h2>Últimos 6 meses</h2>
+        <div class="bars6" id="bars6"></div>
+        <p class="muted" style="margin-top:.7rem"><span class="dot" style="background:var(--green)"></span>Receitas&nbsp;&nbsp;<span class="dot" style="background:var(--red)"></span>Despesas</p>
+      </div>
+    </div>
+    <div class="card" style="margin-top:1.1rem">
+      <h2>Orçamento do mês <span class="muted" id="orcResumo"></span></h2>
+      <div id="budgetMini"></div>
+    </div>
+    <div class="card" style="margin-top:1.1rem">
+      <h2>Reserva e caixinhas</h2>
+      <div id="caixaMini"></div>
+    </div>
+  </section>
+
+  <!-- LANÇAMENTOS -->
+  <section class="tab" id="tab-lanc">
+    <div class="card">
+      <div class="filters">
+        <input type="search" id="fBusca" placeholder="Buscar descrição…">
+        <select id="fTipo"><option value="">Tudo</option><option value="receita">Receitas</option><option value="despesa">Despesas</option></select>
+        <select id="fCat"><option value="">Todas as categorias</option></select>
+        <select id="fStatus"><option value="">Pago e pendente</option><option value="pago">Só pagos</option><option value="pendente">Só pendentes</option></select>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="lanc">
+          <thead><tr><th>Dia</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th></th></tr></thead>
+          <tbody id="lancBody"></tbody>
+        </table>
+      </div>
+      <div class="empty" id="lancEmpty" style="display:none">
+        <strong>Nenhum lançamento neste mês</strong>
+        Toque no botão + para registrar a primeira receita ou despesa.
+      </div>
+    </div>
+  </section>
+
+  <!-- FIXAS E EXTRATO -->
+  <section class="tab" id="tab-auto">
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Contas fixas <button class="btn btn-primary sm" id="btnNewFixed">+ Nova conta fixa</button></h2>
+      <p class="muted" style="margin-bottom:1rem">Aluguel, energia, internet, mensalidades, salário… O sistema lança tudo automaticamente como <strong>pendente</strong> no início de cada mês — você só marca o ✓ quando pagar ou receber.</p>
+      <div id="fixedList"></div>
+      <div style="margin-top:.8rem"><button class="btn btn-ghost sm" id="btnApplyFixed">Lançar fixas no mês exibido</button></div>
+    </div>
+    <div class="card">
+      <h2>Importar extrato do banco</h2>
+      <p class="muted" style="margin-bottom:.8rem">No app do seu banco, exporte o extrato em <strong>OFX</strong> (preferível) ou <strong>CSV</strong> e selecione o arquivo aqui. O sistema lê os lançamentos, sugere a categoria, marca os que parecem duplicados e mostra tudo para você revisar antes de importar. <em>Extrato em PDF não é suportado — exporte em OFX/CSV no próprio banco.</em></p>
+      <button class="btn btn-primary" id="btnPickExtrato">Selecionar arquivo (.ofx / .csv)</button>
+      <input type="file" id="fileExtrato" accept=".ofx,.csv,.txt" hidden>
+      <div id="impBox" style="margin-top:1rem"></div>
+    </div>
+    <div class="card" style="margin-top:1.1rem">
+      <h2>Documentos — boletos, contas e comprovantes</h2>
+      <p class="muted" style="margin-bottom:.8rem"><strong>Cadastrar conta a pagar:</strong> envie o boleto ou a fatura (PDF ou foto — conta de energia, água, cartão…) e o sistema lê a <strong>linha digitável</strong>, extrai valor e vencimento, identifica o emissor e cria o lançamento pendente já com o documento anexado.<br><strong>Dar baixa:</strong> depois de pagar, envie o comprovante e ele localiza o pendente, quita e arquiva. Fotos usam OCR (internet na primeira leitura).</p>
+      <div style="display:flex;gap:.6rem;flex-wrap:wrap">
+        <button class="btn btn-primary" id="btnPickBoleto">Cadastrar conta (boleto/fatura)</button>
+        <button class="btn btn-ghost" id="btnPickRec">Dar baixa (comprovante)</button>
+      </div>
+      <input type="file" id="fileBoleto" accept=".pdf,image/*" hidden>
+      <input type="file" id="fileRec" accept=".pdf,image/*" hidden>
+      <div id="recBox" style="margin-top:1rem"></div>
+      <h2 style="margin-top:1.5rem">Arquivo de comprovantes <span class="muted" id="recCount" style="font-weight:400"></span></h2>
+      <div id="recList"></div>
+    </div>
+  </section>
+
+  <!-- ORÇAMENTO -->
+  <section class="tab" id="tab-orc">
+    <div class="card">
+      <h2>Limites mensais por categoria</h2>
+      <p class="muted" style="margin-bottom:1rem">Defina quanto a família pode gastar em cada categoria. As barras mostram o consumido no mês selecionado.</p>
+      <div id="budgetFull"></div>
+    </div>
+  </section>
+
+  <!-- ORIENTADOR -->
+  <section class="tab" id="tab-orient">
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Diagnóstico do mês <span id="diagChip"></span></h2>
+      <p class="muted" id="diagLine"></p>
+    </div>
+    <div id="adviceList"></div>
+  </section>
+
+  <!-- CAIXINHAS -->
+  <section class="tab" id="tab-caixa">
+    <div class="card" style="margin-bottom:1.1rem" id="reserveCard"></div>
+    <div class="card">
+      <h2>Caixinhas de objetivos <button class="btn btn-primary sm" id="btnNewGoal">+ Nova caixinha</button></h2>
+      <p class="muted" style="margin-bottom:1rem">Separe dinheiro com nome e destino: carro, viagem, reforma. Cada caixinha mostra quanto falta e quanto guardar por mês para chegar lá no prazo.</p>
+      <div id="goalsList"></div>
+    </div>
+  </section>
+
+  <!-- INVESTIR -->
+  <section class="tab" id="tab-invest">
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Seu perfil de investidor <span id="perfilChip"></span></h2>
+      <div class="quiz" id="quizBox"></div>
+    </div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Cenário econômico</h2>
+      <div class="scn-inputs">
+        <div class="field"><label for="scnSelic">Selic (% a.a.)</label><input id="scnSelic" inputmode="decimal" placeholder="ex.: 15,00"></div>
+        <div class="field"><label for="scnIpca">IPCA 12 meses (%)</label><input id="scnIpca" inputmode="decimal" placeholder="ex.: 4,50"></div>
+        <button class="btn btn-ghost" id="btnBCB">Buscar no Banco Central</button>
+      </div>
+      <p class="muted" style="margin-top:.6rem" id="scnInfo"></p>
+    </div>
+    <div class="card">
+      <h2>Alocação sugerida</h2>
+      <div id="allocBox"></div>
+      <div class="disclaimer">Esta é uma orientação <strong>educacional</strong>, gerada por regras gerais de finanças pessoais a partir do seu perfil e dos juros/inflação informados. Não é recomendação de investimento — antes de aplicar valores relevantes, converse com um profissional certificado (planejador CFP ou consultor autorizado pela CVM) e leia as condições de cada produto.</div>
+    </div>
+    <div class="card" style="margin-top:1.1rem">
+      <h2>Melhores opções do mercado para o seu perfil</h2>
+      <div class="scn-inputs">
+        <div class="field"><label for="simVal">Valor a investir (R$)</label><input id="simVal" inputmode="decimal" placeholder="10.000,00"></div>
+        <div class="field"><label for="simMeses">Prazo (meses)</label><input id="simMeses" type="number" min="1" max="480" value="24"></div>
+        <button class="btn btn-ghost" id="btnTD">Buscar taxas reais do Tesouro Direto</button>
+      </div>
+      <p class="muted" style="margin-top:.6rem" id="tdInfo"></p>
+      <div style="margin-top:1.1rem;border-top:1px solid var(--line);padding-top:1rem">
+        <h2 style="margin-bottom:.3rem">Ofertas dos seus bancos</h2>
+        <p class="muted" style="margin-bottom:.8rem">Os bancos não publicam suas ofertas de CDB/LCI em API aberta — as taxas ficam dentro de cada app ou corretora. Registre aqui as que você encontrar e o sistema as coloca na disputa do ranking abaixo, já líquidas de IR, identificando o segmento do banco (S1 = os 5 grandes; S2 = grandes bancos médios) e lembrando o alcance do FGC.</p>
+        <div class="scn-inputs" style="margin-bottom:.7rem">
+          <div class="field"><label for="ofBanco">Banco</label><input id="ofBanco" list="bancosBR" placeholder="ex.: Banco do Brasil" style="width:180px;font-family:var(--body)"></div>
+          <datalist id="bancosBR">
+            <option>Banco do Brasil</option><option>Caixa Econômica</option><option>Itaú</option><option>Bradesco</option><option>Santander</option>
+            <option>BTG Pactual</option><option>Safra</option><option>Citibank</option><option>Banrisul</option><option>Banco do Nordeste</option><option>BV (Votorantim)</option><option>XP</option><option>Nubank</option>
+            <option>Inter</option><option>C6 Bank</option><option>Sicoob</option><option>Sicredi</option><option>PagBank</option><option>Sofisa</option><option>Daycoval</option><option>ABC Brasil</option>
+          </datalist>
+          <div class="field"><label for="ofProd">Produto</label><select id="ofProd"><option>CDB</option><option>LCI</option><option>LCA</option><option>RDB</option></select></div>
+          <div class="field"><label for="ofModo">Indexador</label><select id="ofModo"><option value="cdi">% do CDI</option><option value="pre">Prefixado (% a.a.)</option><option value="ipca">IPCA + (% a.a.)</option></select></div>
+          <div class="field"><label for="ofTaxa">Taxa</label><input id="ofTaxa" inputmode="decimal" placeholder="ex.: 110"></div>
+          <div class="field"><label for="ofPrazo">Prazo (meses)</label><input id="ofPrazo" type="number" min="0" placeholder="0 = liq. diária" style="width:130px"></div>
+          <button class="btn btn-primary" id="btnAddOffer">Adicionar</button>
+        </div>
+        <div id="offerList"></div>
+      </div>
+      <div id="bestBox" style="margin-top:1rem"></div>
+      <p class="muted" style="margin-top:.8rem;font-size:.76rem" id="bestNote"></p>
+    </div>
+  </section>
+
+  <!-- BACKUP -->
+  <section class="tab" id="tab-backup">
+    <div class="card">
+      <h2>Backup e exportação</h2>
+      <p class="muted">Os dados ficam gravados no navegador deste computador. Para garantir, exporte um arquivo de backup de tempos em tempos — e use o mesmo arquivo para restaurar ou levar para outro computador.</p>
+      <div class="backup-actions">
+        <button class="btn btn-primary" id="btnExport">Exportar backup (.json)</button>
+        <button class="btn btn-ghost" id="btnImport">Importar backup</button>
+        <button class="btn btn-ghost" id="btnCSV">Exportar mês em CSV</button>
+        <button class="btn btn-danger" id="btnWipe">Apagar todos os dados</button>
+      </div>
+      <input type="file" id="fileImport" accept=".json" hidden>
+      <p class="muted" style="margin-top:1rem" id="statLine"></p>
+    </div>
+  </section>
+</main>
+
+<button class="fab" id="fabAdd" aria-label="Novo lançamento">+</button>
+
+<!-- MODAL -->
+<dialog id="modal">
+  <div class="modal-body">
+    <h3 id="modalTitle">Novo lançamento</h3>
+    <div class="field">
+      <div class="seg">
+        <button type="button" id="segDesp" class="despesa on">Despesa</button>
+        <button type="button" id="segRec" class="receita">Receita</button>
+      </div>
+    </div>
+    <div class="field"><label for="mDesc">Descrição</label><input id="mDesc" placeholder="Ex.: Supermercado, Salário…"></div>
+    <div class="field"><label for="mVal">Valor (R$)</label><input id="mVal" inputmode="decimal" placeholder="0,00"></div>
+    <div class="field"><label for="mData">Data</label><input id="mData" type="date"></div>
+    <div class="field"><label for="mCat">Categoria</label><select id="mCat"></select></div>
+    <div class="field check"><input type="checkbox" id="mPago" checked><label for="mPago" style="margin:0;text-transform:none;letter-spacing:0;font-size:.88rem">Já pago / recebido</label></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="mCancel">Cancelar</button>
+      <button class="btn btn-primary" id="mSave">Salvar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- MODAL CONTA FIXA -->
+<dialog id="fixedModal">
+  <div class="modal-body">
+    <h3 id="fixedModalTitle">Nova conta fixa</h3>
+    <div class="field">
+      <div class="seg">
+        <button type="button" id="fxSegDesp" class="despesa on">Despesa</button>
+        <button type="button" id="fxSegRec" class="receita">Receita</button>
+      </div>
+    </div>
+    <div class="field"><label for="fxDesc">Descrição</label><input id="fxDesc" placeholder="Ex.: Aluguel, Energia, Salário…"></div>
+    <div class="field"><label for="fxVal">Valor (R$)</label><input id="fxVal" inputmode="decimal" placeholder="0,00"></div>
+    <div class="field"><label for="fxDay">Dia do vencimento</label><input id="fxDay" type="number" min="1" max="31" value="5"></div>
+    <div class="field"><label for="fxCat">Categoria</label><select id="fxCat"></select></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="fxCancel">Cancelar</button>
+      <button class="btn btn-primary" id="fxSave">Salvar</button>
+    </div>
+  </div>
+</dialog>
+
+<!-- MODAL CAIXINHA -->
+<dialog id="goalModal">
+  <div class="modal-body">
+    <h3 id="goalModalTitle">Nova caixinha</h3>
+    <div class="field"><label for="gName">Objetivo</label><input id="gName" placeholder="Ex.: Trocar de carro, Viagem…"></div>
+    <div class="field"><label for="gTarget">Valor da meta (R$)</label><input id="gTarget" inputmode="decimal" placeholder="0,00"></div>
+    <div class="field"><label for="gDeadline">Prazo (opcional)</label><input id="gDeadline" type="month"></div>
+    <div class="field"><label for="gInit">Já guardado (R$)</label><input id="gInit" inputmode="decimal" placeholder="0,00"></div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" id="gCancel">Cancelar</button>
+      <button class="btn btn-primary" id="gSave">Salvar</button>
+    </div>
+  </div>
+</dialog>
+
+<div class="toast" id="toast"></div>
+
+<script>
+/* ================= Estado e persistência ================= */
+const KEY='caderneta-v1';
+const CATS_DESP=[
+ {n:'Moradia',c:'#16C784'},{n:'Alimentação',c:'#EA3943'},{n:'Transporte',c:'#F0B90B'},
+ {n:'Saúde',c:'#58A6FF'},{n:'Educação',c:'#A371F7'},{n:'Lazer',c:'#FF9F40'},
+ {n:'Vestuário',c:'#F778BA'},{n:'Pets',c:'#7EE787'},{n:'Outros',c:'#8B98A5'}
+];
+const CATS_REC=[{n:'Salário',c:'#16C784'},{n:'Renda extra',c:'#58A6FF'},{n:'Investimentos',c:'#F0B90B'},{n:'Outros',c:'#8B98A5'}];
+
+let memStore=null;
+const storage={
+  ok:true,
+  load(){ try{ return JSON.parse(localStorage.getItem(KEY)) }catch(e){ this.ok=false; return memStore } },
+  save(d){ try{ localStorage.setItem(KEY,JSON.stringify(d)) }catch(e){ this.ok=false; memStore=d } }
+};
+
+let state = storage.load() || { transactions:[], budgets:{} };
+state.goals=state.goals||[];
+state.reserve=state.reserve||{balance:0,target:null};
+state.profile=state.profile||{a:{},perfil:null};
+state.cenario=state.cenario||{selic:'',ipca:'',when:null};
+state.fixed=state.fixed||[];
+state.offers=state.offers||[];
+if(!storage.ok) document.getElementById('storageNotice').style.display='block';
+
+let cur=new Date(); cur.setDate(1);            // mês exibido
+let filters={busca:'',tipo:'',cat:'',status:''};
+let editId=null, modalTipo='despesa';
+
+const $=id=>document.getElementById(id);
+const fmt=v=>v.toLocaleString('pt-BR',{style:'currency',currency:'BRL'});
+const ym=d=>d.toISOString().slice(0,7);
+const uid=()=>Date.now().toString(36)+Math.random().toString(36).slice(2,7);
+const catColor=(name,tipo)=>((tipo==='receita'?CATS_REC:CATS_DESP).find(c=>c.n===name)||{c:'#6B7C77'}).c;
+function save(){ storage.save(state); if(!storage.ok) $('storageNotice').style.display='block'; }
+function toast(msg){ const t=$('toast'); t.textContent=msg; t.classList.add('show'); clearTimeout(t._h); t._h=setTimeout(()=>t.classList.remove('show'),2200); }
+
+/* ================= Cálculos ================= */
+const monthTx=(y_m)=>state.transactions.filter(t=>t.date.slice(0,7)===y_m);
+function totals(y_m){
+  let rec=0,des=0,pend=0;
+  for(const t of monthTx(y_m)){
+    if(t.paid){ t.type==='receita'?rec+=t.value:des+=t.value; }
+    else pend+=t.type==='despesa'?t.value:0;
+  }
+  return {rec,des,saldo:rec-des,pend};
+}
+
+/* ================= Render: header ================= */
+function renderHeader(){
+  const k=ym(cur), t=totals(k);
+  $('monthLabel').textContent=cur.toLocaleDateString('pt-BR',{month:'long',year:'numeric'});
+  const s=$('kSaldo');
+  const prevS=totals(ym(new Date(cur.getFullYear(),cur.getMonth()-1,1))).saldo;
+  s.innerHTML=fmt(t.saldo)+` <span class="arr">${t.saldo>=prevS?'▲':'▼'}</span>`;
+  s.className='big '+(t.saldo<0?'neg':'pos');
+  $('kRec').textContent=fmt(t.rec); $('kDes').textContent=fmt(t.des); $('kPend').textContent=fmt(t.pend);
+  renderSpark(k);
+  renderTape(t);
+}
+function renderTape(t){
+  const tPrev=totals(ym(new Date(cur.getFullYear(),cur.getMonth()-1,1)));
+  const arrow=(v,inv)=>v>0?`<span class="${inv?'down':'up'}">▲</span>`:v<0?`<span class="${inv?'up':'down'}">▼</span>`:'<span class="flat">▬</span>';
+  const caixTotal=state.goals.reduce((s,g)=>s+g.balance,0);
+  const itens=[
+    `<span class="ti">SALDO ${arrow(t.saldo)} <b class="${t.saldo<0?'down':'up'}">${fmt(t.saldo)}</b></span>`,
+    `<span class="ti">RECEITAS <b class="up">${fmt(t.rec)}</b></span>`,
+    `<span class="ti">DESPESAS ${arrow(t.des-tPrev.des,true)} <b class="down">${fmt(t.des)}</b></span>`,
+    `<span class="ti">PENDENTES <b class="flat">${fmt(t.pend)}</b></span>`,
+    `<span class="ti">RESERVA <b>${fmt(state.reserve.balance)}</b></span>`,
+    caixTotal?`<span class="ti">CAIXINHAS <b>${fmt(caixTotal)}</b></span>`:'',
+    state.cenario.selic?`<span class="ti">SELIC <b class="flat">${state.cenario.selic}%</b></span>`:'',
+    state.cenario.cdi?`<span class="ti">CDI <b class="flat">${state.cenario.cdi}%</b></span>`:'',
+    state.cenario.ipca?`<span class="ti">IPCA 12M <b class="flat">${state.cenario.ipca}%</b></span>`:''
+  ].filter(Boolean).join('');
+  $('tapeTrack').innerHTML=itens+itens; /* duplicado para o loop contínuo */
+}
+function renderSpark(k){
+  /* Saldo acumulado dos últimos 6 meses, dia a dia — muitos pontos reais, com cara de índice */
+  const fim=new Date(cur.getFullYear(),cur.getMonth()+1,0);
+  const ini=new Date(cur.getFullYear(),cur.getMonth()-5,1);
+  const nd=Math.round((fim-ini)/864e5)+1;
+  const daily=Array(nd).fill(0);
+  for(const t of state.transactions){
+    if(!t.paid) continue;
+    const d=new Date(t.date+'T12:00:00');
+    if(d<ini||d>fim) continue;
+    daily[Math.round((d-ini)/864e5)]+=t.type==='receita'?t.value:-t.value;
+  }
+  let acc=0; const pts=daily.map(v=>acc+=v);
+  const w=250,h=72,padX=6,padY=9;
+  let mn=Math.min(...pts,0), mx=Math.max(...pts,0);
+  if(mx-mn<1){mx+=1;mn-=1;}
+  const x=i=>padX+ i/(nd-1)*(w-padX*2);
+  const y=v=>h-padY-((v-mn)/(mx-mn))*(h-padY*2);
+  const path=pts.map((v,i)=>(i?'L':'M')+x(i).toFixed(1)+' '+y(v).toFixed(1)).join(' ');
+  const last=pts[pts.length-1];
+  const cor=last<0?'#EA3943':'#16C784';
+  /* seta na ponta, orientada pela tendência do trecho final (~10 dias) */
+  const tail=Math.max(nd-11,0);
+  const ang=Math.atan2(y(last)-y(pts[tail]),x(nd-1)-x(tail))*180/Math.PI;
+  const ex=x(nd-1).toFixed(1), ey=y(last).toFixed(1);
+  /* linhas de grade horizontais discretas + linha do zero quando visível */
+  let grid='';
+  for(const gy of [h*0.25,h*0.5,h*0.75]) grid+=`<line x1="${padX}" y1="${gy}" x2="${w-padX}" y2="${gy}" stroke="#16202B"/>`;
+  if(mn<0&&mx>0) grid+=`<line x1="${padX}" y1="${y(0)}" x2="${w-padX}" y2="${y(0)}" stroke="#1E2A36" stroke-dasharray="3 3"/>`;
+  const area=path+` L ${ex} ${h-2} L ${padX} ${h-2} Z`;
+  $('spark').innerHTML=`<svg width="${w}" height="${h}" aria-hidden="true">
+    <defs>
+      <linearGradient id="gradS" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="${cor}" stop-opacity="0.4"/>
+        <stop offset="1" stop-color="${cor}" stop-opacity="0"/>
+      </linearGradient>
+      <filter id="glowS" x="-30%" y="-30%" width="160%" height="160%">
+        <feDropShadow dx="0" dy="0" stdDeviation="2.2" flood-color="${cor}" flood-opacity="0.8"/>
+      </filter>
+    </defs>
+    ${grid}
+    <path d="${area}" fill="url(#gradS)"/>
+    <path d="${path}" fill="none" stroke="${cor}" stroke-width="2.2" stroke-linejoin="round" stroke-linecap="round" filter="url(#glowS)"/>
+    <g transform="translate(${ex} ${ey}) rotate(${ang.toFixed(1)})" filter="url(#glowS)">
+      <polygon points="-2,-4.5 8,0 -2,4.5" fill="${cor}"/>
+    </g>
+  </svg><label style="display:block;font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:#8B98A5;text-align:right;font-family:var(--mono)">saldo acumulado · 6 meses</label>`;
+}
+
+/* ================= Render: visão geral ================= */
+function renderDonut(){
+  const k=ym(cur), byCat={};
+  for(const t of monthTx(k)) if(t.type==='despesa'&&t.paid) byCat[t.cat]=(byCat[t.cat]||0)+t.value;
+  const entries=Object.entries(byCat).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,[,v])=>s+v,0);
+  const D=$('donut'),L=$('donutLegend');
+  if(!total){ D.innerHTML='<p class="muted">Sem despesas pagas neste mês.</p>'; L.innerHTML=''; return; }
+  const R=52,C=2*Math.PI*R; let off=0, segs='';
+  for(const [cat,v] of entries){
+    const frac=v/total, len=frac*C;
+    segs+=`<circle r="${R}" cx="70" cy="70" fill="none" stroke="${catColor(cat,'despesa')}" stroke-width="22"
+      stroke-dasharray="${len} ${C-len}" stroke-dashoffset="${-off}" transform="rotate(-90 70 70)"/>`;
+    off+=len;
+  }
+  D.innerHTML=`<svg width="140" height="140" role="img" aria-label="Despesas por categoria">${segs}
+    <text x="70" y="66" text-anchor="middle" font-family="var(--mono)" font-size="13" font-weight="600" fill="#E6EDF3">${(total>=1000?(total/1000).toFixed(1)+'k':total.toFixed(0))}</text>
+    <text x="70" y="82" text-anchor="middle" font-size="9" fill="#8B98A5">TOTAL R$</text></svg>`;
+  L.innerHTML=entries.map(([cat,v])=>`<div class="li"><span class="dot" style="background:${catColor(cat,'despesa')}"></span>${cat}
+    <b>${fmt(v)} · ${(v/total*100).toFixed(0)}%</b></div>`).join('');
+}
+function renderBars6(){
+  const arr=[];
+  for(let i=5;i>=0;i--){ const d=new Date(cur.getFullYear(),cur.getMonth()-i,1); arr.push({d,t:totals(ym(d))}); }
+  const max=Math.max(...arr.flatMap(m=>[m.t.rec,m.t.des]),1);
+  $('bars6').innerHTML=arr.map(m=>`<div class="col">
+    <div class="duo">
+      <div class="b in" style="height:${Math.max(m.t.rec/max*100,1.5)}%" title="Receitas ${fmt(m.t.rec)}"></div>
+      <div class="b out" style="height:${Math.max(m.t.des/max*100,1.5)}%" title="Despesas ${fmt(m.t.des)}"></div>
+    </div>
+    <span class="lbl">${m.d.toLocaleDateString('pt-BR',{month:'short'}).replace('.','')}</span></div>`).join('');
+}
+function budgetRows(editable){
+  const k=ym(cur), spent={};
+  for(const t of monthTx(k)) if(t.type==='despesa') spent[t.cat]=(spent[t.cat]||0)+t.value;
+  let totalLim=0,totalSp=0,html='';
+  for(const c of CATS_DESP){
+    const lim=state.budgets[c.n]||0, sp=spent[c.n]||0;
+    if(!editable && !lim && !sp) continue;
+    totalLim+=lim; totalSp+=sp;
+    const pct=lim?Math.min(sp/lim*100,100):0;
+    const cls=lim&&sp>lim?'over':(lim&&sp>lim*.8?'warn':'');
+    html+=`<div class="budget-item">
+      <div class="top"><span><span class="dot" style="background:${c.c}"></span><strong>${c.n}</strong></span>
+        <span class="nums">${fmt(sp)}${lim?' / '+fmt(lim):''}${lim&&sp>lim?' · estourou '+fmt(sp-lim):''}</span></div>
+      <div class="bar"><i class="${cls}" style="width:${lim?pct:(sp?100:0)}%"></i></div>
+      ${editable?`<div class="budget-edit"><input inputmode="decimal" data-cat="${c.n}" value="${lim?lim.toFixed(2).replace('.',','):''}" placeholder="sem limite"><span class="muted">limite mensal</span></div>`:''}
+    </div>`;
+  }
+  return {html: html||'<p class="muted">Nenhum limite definido ainda. Configure na aba Orçamento.</p>', totalLim, totalSp};
+}
+function renderVisao(){
+  renderDonut(); renderBars6();
+  const b=budgetRows(false);
+  $('budgetMini').innerHTML=b.html;
+  $('orcResumo').textContent=b.totalLim?`${fmt(b.totalSp)} de ${fmt(b.totalLim)} previstos`:'';
+}
+
+/* ================= Render: lançamentos ================= */
+function renderLanc(){
+  const k=ym(cur);
+  let list=monthTx(k).slice().sort((a,b)=>b.date.localeCompare(a.date));
+  if(filters.busca) list=list.filter(t=>t.desc.toLowerCase().includes(filters.busca));
+  if(filters.tipo) list=list.filter(t=>t.type===filters.tipo);
+  if(filters.cat) list=list.filter(t=>t.cat===filters.cat);
+  if(filters.status) list=list.filter(t=>filters.status==='pago'?t.paid:!t.paid);
+  $('lancEmpty').style.display=list.length?'none':'block';
+  $('lancBody').innerHTML=list.map(t=>`<tr class="${t.paid?'':'pend'}">
+    <td style="font-family:var(--mono)">${t.date.slice(8,10)}</td>
+    <td>${esc(t.desc)}${t.paid?'':' <span class="chip">pendente</span>'}</td>
+    <td><span class="chip"><span class="dot" style="background:${catColor(t.cat,t.type)}"></span>${t.cat}</span></td>
+    <td class="val ${t.type==='receita'?'in':'out'}">${t.type==='receita'?'+':'−'} ${fmt(t.value)}</td>
+    <td><div class="row-actions">
+      ${t.receiptId?`<button class="icon-btn" title="Ver comprovante" onclick="recView('${t.receiptId}')">📎</button>`:''}
+      <button class="icon-btn" title="${t.paid?'Marcar pendente':'Marcar pago'}" onclick="togglePaid('${t.id}')">${t.paid?'✓':'○'}</button>
+      <button class="icon-btn" title="Editar" onclick="openEdit('${t.id}')">✎</button>
+      <button class="icon-btn" title="Excluir" onclick="delTx('${t.id}')">🗑</button>
+    </div></td></tr>`).join('');
+}
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+/* ================= Render: orçamento ================= */
+function renderOrc(){
+  $('budgetFull').innerHTML=budgetRows(true).html;
+  $('budgetFull').querySelectorAll('input[data-cat]').forEach(inp=>{
+    inp.addEventListener('change',()=>{
+      const v=parseVal(inp.value);
+      if(v>0) state.budgets[inp.dataset.cat]=v; else delete state.budgets[inp.dataset.cat];
+      save(); renderAll(); toast('Limite atualizado');
+    });
+  });
+}
+
+/* ================= Orientador ================= */
+const ESSENCIAIS=['Moradia','Saúde','Alimentação','Transporte','Educação'];
+function renderOrient(){
+  const k=ym(cur), t=totals(k), tx=monthTx(k);
+  const pendDesp=tx.filter(x=>!x.paid&&x.type==='despesa').reduce((s,x)=>s+x.value,0);
+  const pendRec=tx.filter(x=>!x.paid&&x.type==='receita').reduce((s,x)=>s+x.value,0);
+  const proj=t.saldo+pendRec-pendDesp;          // saldo previsto após quitar tudo
+  const tips=[];
+
+  if(!tx.length){
+    $('diagChip').innerHTML='<span class="diag info">sem dados</span>';
+    $('diagLine').textContent='Registre as receitas e despesas do mês para receber orientações.';
+    $('adviceList').innerHTML=`<div class="advice"><h3>Comece pelo básico</h3>
+      <p>Lance primeiro as <strong>receitas fixas</strong> (salários) e as <strong>contas essenciais</strong> (moradia, alimentação, transporte, saúde). Com poucos lançamentos o Orientador já consegue dizer se o mês fecha no azul ou no vermelho.</p></div>`;
+    return;
+  }
+
+  // gastos por categoria (pagos + pendentes) e média histórica
+  const despByCat={}; for(const x of tx) if(x.type==='despesa') despByCat[x.cat]=(despByCat[x.cat]||0)+x.value;
+  let med=0,n=0;
+  for(let i=1;i<=3;i++){ const tt=totals(ym(new Date(cur.getFullYear(),cur.getMonth()-i,1))); if(tt.des>0){med+=tt.des;n++;} }
+  med=n?med/n:Math.max(t.des+pendDesp,1);
+
+  /* --- CENÁRIO: VAI FALTAR --- */
+  if(proj<0){
+    const falta=-proj;
+    const flex=Object.entries(despByCat).filter(([c])=>!ESSENCIAIS.includes(c)).sort((a,b)=>b[1]-a[1]);
+    let corte='';
+    if(flex.length){
+      let acc=0;
+      corte='<ul>'+flex.slice(0,3).map(([c,v])=>{acc+=v;return `<li><strong>${c}</strong>: <span class="vv">${fmt(v)}</span> no mês — reduzir 30% libera <span class="vv">${fmt(v*0.3)}</span></li>`}).join('')+'</ul>';
+      if(acc>=falta) corte+=`<p>Cortando nesses itens já é possível cobrir o que falta.</p>`;
+    }
+    tips.push({l:'alert',h:'Vai faltar dinheiro este mês',b:
+      `<p>Somando as contas pendentes, o mês fecha com <span class="vv">${fmt(falta)}</span> de déficit. Onde dá para cortar primeiro (gastos não essenciais):</p>${corte||'<p>Quase tudo está em categorias essenciais — o caminho é renegociar prazos e valores.</p>'}`});
+    tips.push({l:'warn',h:'Proteja-se dos juros',b:
+      `<p>Se não der para cobrir tudo: <strong>negocie e parcele</strong> as contas antes do vencimento (atraso gera multa e juros), priorize as essenciais (moradia, água/luz, alimentação, saúde) e <strong>evite cobrir o rombo no cartão rotativo ou cheque especial</strong> — são as dívidas mais caras que existem. Um empréstimo consignado ou pessoal sai bem mais barato, se for inevitável.</p>`});
+  }
+
+  /* --- PENDÊNCIAS MAIORES QUE O CAIXA --- */
+  if(pendDesp>0 && pendDesp>t.saldo && proj>=0){
+    tips.push({l:'warn',h:'Pendências maiores que o saldo atual',b:
+      `<p>Há <span class="vv">${fmt(pendDesp)}</span> em contas a pagar e o saldo já realizado é <span class="vv">${fmt(t.saldo)}</span>. O mês ainda fecha positivo se as receitas pendentes entrarem — mas confirme as datas para não pagar conta com atraso. Pague primeiro o que tem juros e vencimento mais próximo.</p>`});
+  }
+
+  /* --- ORÇAMENTO ESTOURADO / NO LIMITE --- */
+  const estouradas=[],nolimite=[];
+  for(const c of CATS_DESP){ const lim=state.budgets[c.n]; if(!lim)continue;
+    const sp=despByCat[c.n]||0;
+    if(sp>lim) estouradas.push(`<li><strong>${c.n}</strong>: passou <span class="vv">${fmt(sp-lim)}</span> do limite de <span class="vv">${fmt(lim)}</span></li>`);
+    else if(sp>lim*0.8) nolimite.push(`<li><strong>${c.n}</strong>: já usou ${(sp/lim*100).toFixed(0)}% do limite — restam <span class="vv">${fmt(lim-sp)}</span></li>`);
+  }
+  if(estouradas.length) tips.push({l:'warn',h:'Categorias que estouraram o orçamento',b:`<ul>${estouradas.join('')}</ul><p>Vale revisar se o limite estava realista ou se houve gasto fora do padrão — e compensar segurando essas categorias no mês que vem.</p>`});
+  if(nolimite.length) tips.push({l:'warn',h:'Atenção: perto do limite',b:`<ul>${nolimite.join('')}</ul>`});
+
+  /* --- PROJEÇÃO DO RITMO DE GASTOS (só no mês corrente) --- */
+  const now=new Date();
+  if(ym(now)===k && now.getDate()>=7 && t.des>0){
+    const dim=new Date(cur.getFullYear(),cur.getMonth()+1,0).getDate();
+    const projDes=t.des/now.getDate()*dim;
+    const totalRec=t.rec+pendRec;
+    if(totalRec>0 && projDes>totalRec)
+      tips.push({l:'warn',h:'O ritmo de gastos está acima da renda',b:
+        `<p>No ritmo atual, as despesas do mês devem chegar a <span class="vv">${fmt(projDes)}</span> — acima das receitas previstas de <span class="vv">${fmt(totalRec)}</span>. Reduzir <span class="vv">${fmt((projDes-totalRec)/(dim-now.getDate()+1))}</span> por dia daqui até o fim do mês equilibra a conta.</p>`});
+  }
+
+  /* --- CENÁRIO: SOBROU --- */
+  if(proj>0){
+    const sobra=proj, metaReserva=med*6;
+    if(t.rec>0 && sobra<t.rec*0.1){
+      tips.push({l:'ok',h:'Fechou no azul, mas com margem apertada',b:
+        `<p>Sobram <span class="vv">${fmt(sobra)}</span> — menos de 10% da renda. Qualquer imprevisto vira vermelho. Antes de novos gastos, tente abrir folga: o alvo saudável é sobrar pelo menos 10–20% da renda do mês.</p>`});
+    } else {
+      tips.push({l:'ok',h:`Sobraram ${fmt(sobra)} — sugestão de destino`,b:
+        `<ul>
+          <li><strong>Reserva de emergência (50%)</strong> → <span class="vv">${fmt(sobra*0.5)}</span>. ${state.reserve.balance>=metaReserva?'Sua reserva já bateu a meta — esse valor pode reforçar as caixinhas de objetivos ou os investimentos.':`Sua reserva está em <span class="vv">${fmt(state.reserve.balance)}</span> e a meta é <span class="vv">${fmt(metaReserva)}</span> (6 meses de despesas). Registre o aporte na aba <strong>Caixinhas</strong>; guarde em algo líquido e seguro, como Tesouro Selic ou CDB com liquidez diária.`}</li>
+          <li><strong>Objetivos (30%)</strong> → <span class="vv">${fmt(sobra*0.3)}</span> para as caixinhas com data: carro, viagem, reforma.</li>
+          <li><strong>Livre (20%)</strong> → <span class="vv">${fmt(sobra*0.2)}</span> para gastar sem culpa — orçamento sem respiro não se sustenta.</li>
+        </ul>
+        <p>Se houver dívida com juros altos (cartão, cheque especial), <strong>quitar essa dívida vem antes de investir</strong> — nenhum investimento comum rende mais do que esses juros cobram.</p>`});
+    }
+  }
+
+  /* --- COMPARATIVO COM O MÊS ANTERIOR --- */
+  const tPrev=totals(ym(new Date(cur.getFullYear(),cur.getMonth()-1,1)));
+  if(tPrev.des>0 && t.des>0){
+    const d=(t.des-tPrev.des)/tPrev.des*100;
+    if(Math.abs(d)>=15) tips.push({l:d>0?'warn':'ok',h:d>0?'Despesas subiram em relação ao mês passado':'Despesas caíram em relação ao mês passado',b:
+      `<p>Variação de <span class="vv">${d>0?'+':''}${d.toFixed(0)}%</span> (${fmt(tPrev.des)} → ${fmt(t.des)}). ${d>0?'Confira na rosca de categorias o que puxou a alta — se foi gasto pontual, tudo bem; se virou rotina, ajuste o limite da categoria.':'Bom sinal — se a queda for sustentável, direcione a diferença para a reserva.'}</p>`});
+  }
+
+  /* --- diagnóstico geral --- */
+  let diag,line;
+  if(proj<0){ diag='<span class="diag alert">no vermelho</span>'; line=`Previsão de déficit de ${fmt(-proj)} ao fim do mês, já contando as pendências.`; }
+  else if(tips.some(x=>x.l==='warn')){ diag='<span class="diag warn">atenção</span>'; line=`O mês fecha positivo em ${fmt(proj)}, mas há pontos que pedem cuidado.`; }
+  else { diag='<span class="diag ok">no azul</span>'; line=`Tudo em ordem: previsão de sobra de ${fmt(proj)} ao fim do mês.`; }
+  $('diagChip').innerHTML=diag; $('diagLine').textContent=line;
+  $('adviceList').innerHTML=tips.map(x=>`<div class="advice ${x.l}"><h3>${x.h}</h3>${x.b}</div>`).join('');
+}
+
+/* ================= Reserva e caixinhas ================= */
+function avgDespMensal(){
+  let med=0,n=0;
+  for(let i=0;i<=3;i++){ const tt=totals(ym(new Date(cur.getFullYear(),cur.getMonth()-i,1))); if(tt.des>0){med+=tt.des;n++;} }
+  return n?med/n:0;
+}
+function reserveTarget(){ return state.reserve.target || Math.max(avgDespMensal()*6,0); }
+function barHtml(pct,full){ return `<div class="bar"><i class="${full?'':'gold'}" style="width:${Math.min(pct,100)}%"></i></div>`; }
+
+function renderCaixa(){
+  /* --- reserva de emergência --- */
+  const bal=state.reserve.balance, meta=reserveTarget();
+  const pct=meta?bal/meta*100:0, falta=Math.max(meta-bal,0);
+  $('reserveCard').innerHTML=`
+    <h2>Reserva de emergência <span class="muted" style="font-weight:400">${state.reserve.target?'meta definida por você':'meta automática: 6 meses de despesas'}</span></h2>
+    <div class="top" style="display:flex;justify-content:space-between;flex-wrap:wrap;gap:.5rem;font-size:.9rem">
+      <span><strong style="font-family:var(--mono);font-size:1.15rem">${fmt(bal)}</strong> guardados</span>
+      <span class="nums" style="font-family:var(--mono);color:var(--ink-soft)">${meta?`meta ${fmt(meta)} · ${Math.min(pct,999).toFixed(0)}%`:'sem meta ainda — registre despesas ou defina manualmente'}</span>
+    </div>
+    ${barHtml(pct,pct>=100)}
+    <p class="meta muted" style="margin-top:.3rem">${pct>=100?'Meta atingida! Excedentes podem ir para as caixinhas de objetivos ou investimentos.':meta?`Faltam ${fmt(falta)}. Guardando ${fmt(falta/12)} por mês, você completa em 1 ano; ${fmt(falta/24)}/mês, em 2 anos.`:''}</p>
+    <div class="acts" style="display:flex;gap:.4rem;margin-top:.7rem;flex-wrap:wrap">
+      <button class="btn btn-primary sm" onclick="resMov(1)">Depositar</button>
+      <button class="btn btn-ghost sm" onclick="resMov(-1)">Resgatar</button>
+      <button class="btn btn-ghost sm" onclick="resTarget()">Ajustar meta</button>
+    </div>`;
+
+  /* --- caixinhas --- */
+  if(!state.goals.length){
+    $('goalsList').innerHTML=`<div class="empty"><strong>Nenhuma caixinha ainda</strong>Crie a primeira: dê um nome ao objetivo, defina o valor e, se quiser, um prazo.</div>`;
+  } else {
+    $('goalsList').innerHTML=state.goals.map(g=>{
+      const p=g.target?g.balance/g.target*100:0;
+      let prazo='';
+      if(g.deadline){
+        const now=new Date(), mLeft=(+g.deadline.slice(0,4)-now.getFullYear())*12+(+g.deadline.slice(5,7)-1-now.getMonth());
+        const dl=new Date(+g.deadline.slice(0,4),+g.deadline.slice(5,7)-1,1).toLocaleDateString('pt-BR',{month:'short',year:'numeric'});
+        if(g.balance>=g.target) prazo=`Meta atingida 🎉`;
+        else if(mLeft>0) prazo=`Prazo: ${dl} — guarde <strong style="font-family:var(--mono)">${fmt((g.target-g.balance)/mLeft)}/mês</strong> para chegar lá`;
+        else prazo=`Prazo (${dl}) vencido — faltam ${fmt(g.target-g.balance)}; redefina a data ou reforce os aportes`;
+      } else if(g.balance<g.target) prazo=`Faltam ${fmt(g.target-g.balance)}`;
+      else prazo='Meta atingida 🎉';
+      return `<div class="goal">
+        <div class="top"><h3>${esc(g.name)}</h3><span class="nums">${fmt(g.balance)} / ${fmt(g.target)} · ${Math.min(p,999).toFixed(0)}%</span></div>
+        ${barHtml(p,p>=100)}
+        <p class="meta">${prazo}</p>
+        <div class="acts">
+          <button class="btn btn-primary sm" onclick="goalMov('${g.id}',1)">Depositar</button>
+          <button class="btn btn-ghost sm" onclick="goalMov('${g.id}',-1)">Resgatar</button>
+          <button class="btn btn-ghost sm" onclick="goalEdit('${g.id}')">Editar</button>
+          <button class="btn btn-danger sm" onclick="goalDel('${g.id}')">Excluir</button>
+        </div></div>`;
+    }).join('');
+  }
+  renderCaixaMini();
+}
+function renderCaixaMini(){
+  const bal=state.reserve.balance, meta=reserveTarget();
+  let html=meta||bal?`<div class="mini-goal"><div class="top"><span><span class="dot" style="background:var(--green)"></span><strong>Reserva de emergência</strong></span><b>${fmt(bal)}${meta?' / '+fmt(meta):''}</b></div>${barHtml(meta?bal/meta*100:0,meta&&bal>=meta)}</div>`:'';
+  html+=state.goals.map(g=>`<div class="mini-goal"><div class="top"><span><span class="dot" style="background:var(--gold)"></span>${esc(g.name)}</span><b>${fmt(g.balance)} / ${fmt(g.target)}</b></div>${barHtml(g.target?g.balance/g.target*100:0,g.balance>=g.target)}</div>`).join('');
+  $('caixaMini').innerHTML=html||'<p class="muted">Monte sua reserva de emergência e crie caixinhas de objetivos na aba <strong>Caixinhas</strong>.</p>';
+}
+window.resMov=dir=>{
+  const v=parseVal(prompt(dir>0?'Quanto depositar na reserva? (R$)':'Quanto resgatar da reserva? (R$)')||'');
+  if(v>0){ state.reserve.balance=Math.max(state.reserve.balance+dir*v,0); save(); renderCaixa(); toast(dir>0?'Depósito na reserva registrado':'Resgate registrado'); }
+};
+window.resTarget=()=>{
+  const v=prompt('Meta da reserva em R$ (deixe vazio para voltar à meta automática de 6 meses de despesas):',state.reserve.target?state.reserve.target.toFixed(2).replace('.',','):'');
+  if(v===null)return;
+  state.reserve.target=parseVal(v)>0?parseVal(v):null; save(); renderCaixa(); toast('Meta da reserva atualizada');
+};
+window.goalMov=(id,dir)=>{
+  const g=state.goals.find(g=>g.id===id); if(!g)return;
+  const v=parseVal(prompt((dir>0?'Quanto depositar em ':'Quanto resgatar de ')+`"${g.name}"? (R$)`)||'');
+  if(v>0){ g.balance=Math.max(g.balance+dir*v,0); save(); renderCaixa(); toast(dir>0?'Depósito registrado':'Resgate registrado'); }
+};
+window.goalDel=id=>{
+  const g=state.goals.find(g=>g.id===id);
+  if(g&&confirm(`Excluir a caixinha "${g.name}"?`)){ state.goals=state.goals.filter(x=>x.id!==id); save(); renderCaixa(); toast('Caixinha excluída'); }
+};
+let editGoalId=null;
+window.goalEdit=id=>{
+  const g=state.goals.find(g=>g.id===id); if(!g)return;
+  editGoalId=id; $('goalModalTitle').textContent='Editar caixinha';
+  $('gName').value=g.name; $('gTarget').value=g.target.toFixed(2).replace('.',',');
+  $('gDeadline').value=g.deadline||''; $('gInit').value=g.balance.toFixed(2).replace('.',',');
+  $('goalModal').showModal();
+};
+$('btnNewGoal').onclick=()=>{
+  editGoalId=null; $('goalModalTitle').textContent='Nova caixinha';
+  $('gName').value='';$('gTarget').value='';$('gDeadline').value='';$('gInit').value='';
+  $('goalModal').showModal(); $('gName').focus();
+};
+$('gCancel').onclick=()=>$('goalModal').close();
+$('gSave').onclick=()=>{
+  const name=$('gName').value.trim(), target=parseVal($('gTarget').value);
+  if(!name) return toast('Dê um nome ao objetivo'); if(!target) return toast('Informe o valor da meta');
+  const data={name,target,deadline:$('gDeadline').value||null,balance:parseVal($('gInit').value)};
+  if(editGoalId){ Object.assign(state.goals.find(g=>g.id===editGoalId),data); }
+  else state.goals.push({id:uid(),...data});
+  save(); $('goalModal').close(); renderCaixa(); toast(editGoalId?'Caixinha atualizada':'Caixinha criada');
+};
+
+/* ================= Contas fixas ================= */
+function renderFixed(){
+  if(!state.fixed.length){
+    $('fixedList').innerHTML='<div class="empty"><strong>Nenhuma conta fixa cadastrada</strong>Cadastre o aluguel, a energia, a internet, o salário… e deixe o lançamento mensal por conta do sistema.</div>';
+    return;
+  }
+  $('fixedList').innerHTML=`<div style="overflow-x:auto"><table class="lanc"><thead><tr>
+    <th>Dia</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody>`+
+    state.fixed.slice().sort((a,b)=>a.day-b.day).map(f=>`<tr class="${f.active?'':'pend'}">
+      <td style="font-family:var(--mono)">${String(f.day).padStart(2,'0')}</td>
+      <td>${esc(f.desc)}${f.active?'':' <span class="chip">pausada</span>'}</td>
+      <td><span class="chip"><span class="dot" style="background:${catColor(f.cat,f.type)}"></span>${f.cat}</span></td>
+      <td class="val ${f.type==='receita'?'in':'out'}">${f.type==='receita'?'+':'−'} ${fmt(f.value)}</td>
+      <td><div class="row-actions">
+        <button class="icon-btn" title="${f.active?'Pausar':'Reativar'}" onclick="fixedToggle('${f.id}')">${f.active?'⏸':'▶'}</button>
+        <button class="icon-btn" title="Editar" onclick="fixedEdit('${f.id}')">✎</button>
+        <button class="icon-btn" title="Excluir" onclick="fixedDel('${f.id}')">🗑</button>
+      </div></td></tr>`).join('')+'</tbody></table></div>';
+}
+function applyFixed(k,silent){
+  let n=0; const dim=new Date(+k.slice(0,4),+k.slice(5,7),0).getDate();
+  for(const f of state.fixed){
+    if(!f.active) continue;
+    if(state.transactions.some(t=>t.fixedId===f.id && t.date.slice(0,7)===k)) continue;
+    state.transactions.push({id:uid(),fixedId:f.id,type:f.type,desc:f.desc,cat:f.cat,value:f.value,
+      date:`${k}-${String(Math.min(f.day,dim)).padStart(2,'0')}`,paid:false});
+    n++;
+  }
+  if(n){ save(); renderAll(); }
+  if(!silent) toast(n?`${n} lançamento(s) fixo(s) criado(s) como pendentes`:'As fixas deste mês já estavam lançadas');
+  return n;
+}
+window.fixedToggle=id=>{ const f=state.fixed.find(f=>f.id===id); if(f){f.active=!f.active; save(); renderFixed();} };
+window.fixedDel=id=>{ const f=state.fixed.find(f=>f.id===id);
+  if(f&&confirm(`Excluir a conta fixa "${f.desc}"? Lançamentos já criados permanecem.`)){
+    state.fixed=state.fixed.filter(x=>x.id!==id); save(); renderFixed(); toast('Conta fixa excluída'); } };
+let editFixedId=null, fixedTipo='despesa';
+function setFixedTipo(t){ fixedTipo=t;
+  $('fxSegDesp').classList.toggle('on',t==='despesa'); $('fxSegRec').classList.toggle('on',t==='receita');
+  fillCatSelect($('fxCat'),t);
+}
+window.fixedEdit=id=>{ const f=state.fixed.find(f=>f.id===id); if(!f)return;
+  editFixedId=id; setFixedTipo(f.type);
+  $('fxDesc').value=f.desc; $('fxVal').value=f.value.toFixed(2).replace('.',','); $('fxDay').value=f.day; $('fxCat').value=f.cat;
+  $('fixedModalTitle').textContent='Editar conta fixa'; $('fixedModal').showModal();
+};
+$('btnNewFixed').onclick=()=>{ editFixedId=null; setFixedTipo('despesa');
+  $('fxDesc').value='';$('fxVal').value='';$('fxDay').value=5;
+  $('fixedModalTitle').textContent='Nova conta fixa'; $('fixedModal').showModal(); $('fxDesc').focus();
+};
+$('fxSegDesp').onclick=()=>setFixedTipo('despesa'); $('fxSegRec').onclick=()=>setFixedTipo('receita');
+$('fxCancel').onclick=()=>$('fixedModal').close();
+$('fxSave').onclick=()=>{
+  const desc=$('fxDesc').value.trim(), val=parseVal($('fxVal').value), day=Math.min(Math.max(+$('fxDay').value||1,1),31);
+  if(!desc) return toast('Informe a descrição'); if(!val) return toast('Informe um valor válido');
+  const data={type:fixedTipo,desc,value:val,day,cat:$('fxCat').value,active:true};
+  if(editFixedId) Object.assign(state.fixed.find(f=>f.id===editFixedId),{...data,active:state.fixed.find(f=>f.id===editFixedId).active});
+  else state.fixed.push({id:uid(),...data});
+  save(); $('fixedModal').close(); renderFixed(); toast(editFixedId?'Conta fixa atualizada':'Conta fixa cadastrada');
+};
+$('btnApplyFixed').onclick=()=>applyFixed(ym(cur),false);
+
+/* ================= Importar extrato (OFX / CSV) ================= */
+const KW=[
+ [/mercad|super|atacad|carrefour|assai|pao de acucar|panif|padar|acoug|hortifrut|sacolao|ifood|restaur|lanch|pizz|burger|cafe/i,'Alimentação'],
+ [/posto|combust|gasolin|etanol|uber|99app|99 ?pop|estacion|pedagio|sem parar|ipva|licenciam|oficina|pneu/i,'Transporte'],
+ [/farmac|drogar|hospital|clinic|laborat|unimed|amil|hapvida|plano de saude|dentist|otica/i,'Saúde'],
+ [/aluguel|condomin|energia|eletric|cpfl|enel|neoenergia|sabesp|saneamento|agua|internet|fibra|vivo|claro|tim|oi |gas|iptu/i,'Moradia'],
+ [/escola|coleg|faculdad|universid|curso|apostila|livrar|mensalidad/i,'Educação'],
+ [/cinema|netflix|spotify|prime|disney|max|globoplay|youtube|steam|playstation|show|ingresso|hotel|pousada|viage/i,'Lazer'],
+ [/magalu|magazine|shein|shopee|americanas|mercado ?livre|renner|riachuelo|c&a|calcad|vestuar|roupa/i,'Vestuário'],
+ [/petz|cobasi|veterinar|racao|pet ?shop/i,'Pets']
+];
+function guessCat(desc,type){
+  if(type==='receita') return /salari|provento|folha|inss|aposentad/i.test(desc)?'Salário':/rendiment|juros|dividend|resgate/i.test(desc)?'Investimentos':'Outros';
+  for(const [re,cat] of KW) if(re.test(desc)) return cat;
+  return 'Outros';
+}
+function parseOFX(txt){
+  const out=[];
+  const blocks=txt.split(/<STMTTRN>/i).slice(1);
+  for(let b of blocks){
+    b=b.split(/<\/STMTTRN>/i)[0];
+    const g=t=>{const r=new RegExp('<'+t+'>([^<\\r\\n]*)','i').exec(b);return r?r[1].trim():'';};
+    const dt=g('DTPOSTED').slice(0,8);
+    const val=parseFloat(g('TRNAMT').replace(',','.'));
+    const desc=(g('MEMO')||g('NAME')||'Lançamento').replace(/\s+/g,' ');
+    if(dt.length===8&&!isNaN(val)&&val!==0)
+      out.push({date:`${dt.slice(0,4)}-${dt.slice(4,6)}-${dt.slice(6,8)}`,desc,value:Math.abs(val),type:val<0?'despesa':'receita'});
+  }
+  return out;
+}
+function parseMoneyBR(s){
+  s=s.trim().replace(/[R$\s]/g,'');
+  const neg=/^-|^\(|D$/.test(s); s=s.replace(/[()D C]/gi,'').replace(/-/g,'');
+  if(/,\d{1,2}$/.test(s)) s=s.replace(/\./g,'').replace(',','.');
+  else s=s.replace(/,/g,'');
+  const v=parseFloat(s); return isNaN(v)?null:(neg?-v:v);
+}
+function parseCSVExtrato(txt){
+  const out=[];
+  const lines=txt.split(/\r?\n/).filter(l=>l.trim());
+  const sep=((txt.match(/;/g)||[]).length>=(txt.match(/,/g)||[]).length)?';':',';
+  for(const line of lines){
+    const cells=line.split(sep).map(c=>c.replace(/^"|"$/g,'').trim());
+    let date=null;
+    for(const c of cells){
+      let m=/^(\d{2})\/(\d{2})\/(\d{4})/.exec(c); if(m){date=`${m[3]}-${m[2]}-${m[1]}`;break;}
+      m=/^(\d{4})-(\d{2})-(\d{2})/.exec(c); if(m){date=m[0];break;}
+    }
+    if(!date) continue; // pula cabeçalho e linhas sem data
+    let value=null;
+    for(let i=cells.length-1;i>=0;i--){
+      if(/^-?\(?R?\$?\s?-?[\d.,]+\)?\s?[DC]?$/i.test(cells[i]) && /\d/.test(cells[i]) && !/\//.test(cells[i])){
+        const v=parseMoneyBR(cells[i]); if(v!==null&&v!==0){value=v;break;}
+      }
+    }
+    if(value===null) continue;
+    const desc=(cells.filter(c=>c&&!/^\d{2}\/\d{2}\/\d{4}/.test(c)&&!/^\d{4}-\d{2}-\d{2}/.test(c)&&parseMoneyBR(c)===null)
+      .sort((a,b)=>b.length-a.length)[0]||'Lançamento').replace(/\s+/g,' ');
+    out.push({date,desc,value:Math.abs(value),type:value<0?'despesa':'receita'});
+  }
+  return out;
+}
+let impPreview=[];
+$('btnPickExtrato').onclick=()=>$('fileExtrato').click();
+$('fileExtrato').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=()=>{
+    const txt=r.result;
+    let rows=/<OFX|<STMTTRN/i.test(txt)?parseOFX(txt):parseCSVExtrato(txt);
+    if(!rows.length){ $('impBox').innerHTML='<p class="muted">Não consegui identificar lançamentos nesse arquivo. Confira se é um OFX ou CSV exportado pelo banco — se persistir, me mostre as primeiras linhas que eu ajusto o leitor.</p>'; return; }
+    rows.sort((a,b)=>a.date.localeCompare(b.date));
+    impPreview=rows.map(x=>{
+      const dup=state.transactions.some(t=>t.date===x.date&&Math.abs(t.value-x.value)<0.005&&t.type===x.type);
+      return {...x,cat:guessCat(x.desc,x.type),sel:!dup,dup};
+    });
+    renderImpPreview();
+  };
+  r.readAsText(f,'ISO-8859-1'); e.target.value='';
+};
+function renderImpPreview(){
+  const selCount=impPreview.filter(x=>x.sel).length;
+  $('impBox').innerHTML=`<p class="muted" style="margin-bottom:.5rem">${impPreview.length} lançamentos encontrados — revise as categorias e desmarque o que não quiser. ${impPreview.some(x=>x.dup)?'Os marcados como <span class="chip">já existe</span> vieram desmarcados para evitar duplicidade.':''}</p>
+  <div style="overflow-x:auto"><table class="lanc"><thead><tr><th></th><th>Data</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th></tr></thead><tbody>
+  ${impPreview.map((x,i)=>`<tr class="${x.sel?'':'pend'}">
+    <td><input type="checkbox" ${x.sel?'checked':''} onchange="impSel(${i},this.checked)"></td>
+    <td style="font-family:var(--mono)">${x.date.slice(8,10)}/${x.date.slice(5,7)}</td>
+    <td>${esc(x.desc)}${x.dup?' <span class="chip">já existe</span>':''}</td>
+    <td><select onchange="impCat(${i},this.value)" style="padding:.3rem;border:1px solid var(--line);border-radius:7px">
+      ${(x.type==='receita'?CATS_REC:CATS_DESP).map(c=>`<option ${c.n===x.cat?'selected':''}>${c.n}</option>`).join('')}</select></td>
+    <td class="val ${x.type==='receita'?'in':'out'}">${x.type==='receita'?'+':'−'} ${fmt(x.value)}</td></tr>`).join('')}
+  </tbody></table></div>
+  <div style="display:flex;gap:.6rem;margin-top:.9rem;flex-wrap:wrap">
+    <button class="btn btn-primary" onclick="impConfirm()">Importar ${selCount} selecionado(s)</button>
+    <button class="btn btn-ghost" onclick="impCancel()">Descartar</button>
+  </div>`;
+}
+window.impSel=(i,v)=>{ impPreview[i].sel=v; renderImpPreview(); };
+window.impCat=(i,v)=>{ impPreview[i].cat=v; };
+window.impCancel=()=>{ impPreview=[]; $('impBox').innerHTML=''; };
+window.impConfirm=()=>{
+  const sel=impPreview.filter(x=>x.sel);
+  if(!sel.length) return toast('Nenhum lançamento selecionado');
+  for(const x of sel) state.transactions.push({id:uid(),type:x.type,desc:x.desc,cat:x.cat,value:x.value,date:x.date,paid:true});
+  impPreview=[]; $('impBox').innerHTML='';
+  save(); renderAll(); toast(`${sel.length} lançamento(s) importado(s)`);
+};
+
+/* ================= Comprovantes (leitura, baixa e arquivo) ================= */
+/* Os arquivos ficam no IndexedDB do navegador (suporta anexos grandes); o vínculo fica no lançamento via receiptId. */
+let _db=null;
+const idb=()=>_db?Promise.resolve(_db):new Promise((res,rej)=>{
+  const r=indexedDB.open('caderneta-recibos',1);
+  r.onupgradeneeded=()=>r.result.createObjectStore('files',{keyPath:'id'});
+  r.onsuccess=()=>{_db=r.result;res(_db)}; r.onerror=()=>rej(r.error);
+});
+const idbPut=rec=>idb().then(d=>new Promise((res,rej)=>{const t=d.transaction('files','readwrite');t.objectStore('files').put(rec);t.oncomplete=res;t.onerror=()=>rej(t.error);}));
+const idbGet=id=>idb().then(d=>new Promise((res,rej)=>{const q=d.transaction('files').objectStore('files').get(id);q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);}));
+const idbAll=()=>idb().then(d=>new Promise((res,rej)=>{const q=d.transaction('files').objectStore('files').getAll();q.onsuccess=()=>res(q.result);q.onerror=()=>rej(q.error);}));
+const idbDel=id=>idb().then(d=>new Promise((res,rej)=>{const t=d.transaction('files','readwrite');t.objectStore('files').delete(id);t.oncomplete=res;t.onerror=()=>rej(t.error);}));
+const idbClear=()=>idb().then(d=>new Promise((res,rej)=>{const t=d.transaction('files','readwrite');t.objectStore('files').clear();t.oncomplete=res;t.onerror=()=>rej(t.error);}));
+const blobB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(r.result);r.onerror=rej;r.readAsDataURL(b);});
+
+const _scripts={};
+function loadScript(src){ return _scripts[src]||(_scripts[src]=new Promise((res,rej)=>{
+  const s=document.createElement('script'); s.src=src; s.onload=res;
+  s.onerror=()=>{delete _scripts[src];rej(new Error('falha ao carregar '+src))};
+  document.head.appendChild(s);
+}));}
+
+async function extractReceiptText(file){
+  if(file.type==='application/pdf'||/\.pdf$/i.test(file.name)){
+    await loadScript('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js');
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    const pdf=await pdfjsLib.getDocument({data:await file.arrayBuffer()}).promise;
+    let txt='';
+    for(let p=1;p<=Math.min(pdf.numPages,3);p++){
+      const tc=await (await pdf.getPage(p)).getTextContent();
+      txt+=tc.items.map(i=>i.str).join(' ')+'\n';
+    }
+    return txt;
+  }
+  toast('Lendo a imagem com OCR… pode levar um minuto');
+  await loadScript('https://cdnjs.cloudflare.com/ajax/libs/tesseract.js/5.0.5/tesseract.min.js');
+  const r=await Tesseract.recognize(file,'por');
+  return r.data.text;
+}
+function parseReceipt(txt){
+  const t=txt.replace(/\u00a0/g,' ');
+  const vals=[...t.matchAll(/R?\$?\s?(\d{1,3}(?:\.\d{3})*,\d{2})/g)].map(m=>({v:parseVal(m[1]),i:m.index}));
+  let value=null;
+  for(const c of vals){ if(/valor|total|pago|pagamento|transfer/i.test(t.slice(Math.max(c.i-35,0),c.i))){value=c.v;break;} }
+  if(value===null&&vals.length) value=vals[0].v;
+  const dm=/(\d{2})\/(\d{2})\/(\d{4})/.exec(t);
+  return { value, date:dm?`${dm[3]}-${dm[2]}-${dm[1]}`:null,
+    resumo:t.replace(/\s+/g,' ').trim().slice(0,140), tokens:t.toLowerCase() };
+}
+function matchPendentes(p){
+  return state.transactions.filter(t=>!t.paid).map(t=>{
+    let s=0;
+    if(p.value!==null){ if(Math.abs(t.value-p.value)<0.005)s+=100; else if(Math.abs(t.value-p.value)/Math.max(t.value,1)<0.02)s+=40; }
+    if(p.date) s+=Math.max(20-Math.abs((new Date(p.date)-new Date(t.date))/864e5),0);
+    s+=t.desc.toLowerCase().split(/\W+/).filter(w=>w.length>3&&p.tokens.includes(w)).length*15;
+    return {t,s};
+  }).sort((a,b)=>b.s-a.s).slice(0,5);
+}
+
+let recPending=null;
+$('btnPickRec').onclick=()=>$('fileRec').click();
+$('fileRec').onchange=async e=>{
+  const file=e.target.files[0]; e.target.value=''; if(!file)return;
+  $('recBox').innerHTML='<p class="muted">Lendo o comprovante…</p>';
+  let parsed;
+  try{ parsed=parseReceipt(await extractReceiptText(file)); }
+  catch(err){ parsed={value:null,date:null,resumo:'(não foi possível ler o conteúdo — sem internet para carregar o leitor, ou arquivo sem texto; vincule manualmente abaixo)',tokens:''}; }
+  recPending={file,parsed};
+  renderRecMatch();
+};
+function renderRecMatch(){
+  const p=recPending.parsed;
+  const cands=matchPendentes(p).filter(c=>c.s>=20);
+  const pendOpts=state.transactions.filter(t=>!t.paid).sort((a,b)=>b.date.localeCompare(a.date))
+    .map(t=>`<option value="${t.id}">${t.date.slice(8,10)}/${t.date.slice(5,7)} — ${esc(t.desc)} — ${fmt(t.value)}</option>`).join('');
+  $('recBox').innerHTML=`<div class="goal" style="border-left:5px solid var(--green)">
+    <div class="top"><h3>${esc(recPending.file.name)}</h3>
+      <span class="nums">${p.value!==null?'Valor lido: '+fmt(p.value):'valor não identificado'}${p.date?` · ${p.date.slice(8,10)}/${p.date.slice(5,7)}/${p.date.slice(0,4)}`:''}</span></div>
+    <p class="meta">${esc(p.resumo)}…</p>
+    ${cands.length?'<p style="font-size:.86rem;margin-top:.7rem"><strong>Pendentes compatíveis encontrados:</strong></p>'
+      +cands.map(c=>`<div class="acts" style="align-items:center">
+        <button class="btn btn-primary sm" onclick="recBaixa('${c.t.id}')">Dar baixa</button>
+        <span style="font-size:.85rem">${c.t.date.slice(8,10)}/${c.t.date.slice(5,7)} · ${esc(c.t.desc)} · <strong style="font-family:var(--mono)">${fmt(c.t.value)}</strong>
+        ${c.s>=100?' <span class="chip" style="border-color:var(--green);color:var(--green)">valor exato</span>':''}</span></div>`).join('')
+      :'<p class="meta" style="margin-top:.6rem">Nenhum pendente bateu com o comprovante automaticamente.</p>'}
+    <div class="acts" style="margin-top:.8rem">
+      ${pendOpts?`<select id="recManual" style="padding:.45rem;border:1px solid var(--line);border-radius:8px;max-width:100%">${pendOpts}</select>
+      <button class="btn btn-ghost sm" onclick="recBaixaManual()">Dar baixa no selecionado</button>`:''}
+      <button class="btn btn-ghost sm" onclick="recArquivar()">Só arquivar</button>
+      <button class="btn btn-danger sm" onclick="recCancel()">Cancelar</button>
+    </div></div>`;
+}
+async function recStore(txId){
+  const id=uid();
+  await idbPut({id,name:recPending.file.name,type:recPending.file.type,when:new Date().toISOString(),
+    txId:txId||null,resumo:recPending.parsed.resumo,blob:recPending.file});
+  return id;
+}
+window.recBaixa=async txId=>{
+  try{
+    const id=await recStore(txId);
+    const t=state.transactions.find(t=>t.id===txId); t.paid=true; t.receiptId=id;
+    recPending=null; $('recBox').innerHTML=''; save(); renderAll(); renderRecList();
+    toast('Baixa registrada e comprovante arquivado 📎');
+  }catch{ toast('Não consegui arquivar — armazenamento indisponível'); }
+};
+window.recBaixaManual=()=>{ const sel=$('recManual'); if(sel&&sel.value) recBaixa(sel.value); };
+window.recArquivar=async()=>{
+  try{ await recStore(null); recPending=null; $('recBox').innerHTML=''; renderRecList(); toast('Comprovante arquivado'); }
+  catch{ toast('Não consegui arquivar — armazenamento indisponível'); }
+};
+window.recCancel=()=>{ recPending=null; $('recBox').innerHTML=''; };
+window.recView=async id=>{
+  try{ const r=await idbGet(id); if(!r) return toast('Comprovante não encontrado');
+    const url=URL.createObjectURL(r.blob);
+    const a=document.createElement('a'); a.href=url; a.target='_blank'; a.download=r.name; 
+    if(r.type&&(r.type.includes('pdf')||r.type.startsWith('image'))) window.open(url,'_blank'); else a.click();
+  }catch{ toast('Não consegui abrir o comprovante'); }
+};
+window.recDelete=async id=>{
+  if(!confirm('Excluir este comprovante do arquivo?'))return;
+  try{ await idbDel(id);
+    const t=state.transactions.find(t=>t.receiptId===id); if(t){delete t.receiptId; save();}
+    renderAll(); renderRecList(); toast('Comprovante excluído');
+  }catch{ toast('Não consegui excluir'); }
+};
+async function renderRecList(){
+  try{
+    const recs=(await idbAll()).sort((a,b)=>b.when.localeCompare(a.when));
+    $('recCount').textContent=recs.length?`· ${recs.length} arquivado(s)`:'';
+    if(!recs.length){ $('recList').innerHTML='<p class="muted">Nenhum comprovante arquivado ainda.</p>'; return; }
+    $('recList').innerHTML=`<div style="overflow-x:auto"><table class="lanc"><thead><tr><th>Data</th><th>Arquivo</th><th>Vinculado a</th><th></th></tr></thead><tbody>`+
+      recs.map(r=>{
+        const t=r.txId?state.transactions.find(t=>t.id===r.txId):null;
+        return `<tr><td style="font-family:var(--mono)">${new Date(r.when).toLocaleDateString('pt-BR')}</td>
+        <td>${esc(r.name)}</td>
+        <td>${t?esc(t.desc)+' · '+fmt(t.value):'<span class="muted">— sem vínculo</span>'}</td>
+        <td><div class="row-actions">
+          <button class="icon-btn" title="Abrir" onclick="recView('${r.id}')">📎</button>
+          <button class="icon-btn" title="Excluir" onclick="recDelete('${r.id}')">🗑</button>
+        </div></td></tr>`;
+      }).join('')+'</tbody></table></div>';
+  }catch{ $('recList').innerHTML='<p class="muted">Arquivo de comprovantes indisponível neste ambiente — abra o arquivo direto no navegador.</p>'; }
+}
+
+/* ================= Cadastro de conta pelo boleto/fatura ================= */
+/* A linha digitável codifica valor e vencimento — leitura mais confiável que o texto.
+   47 dígitos = boleto bancário (fator de vencimento + valor nas posições 34–47).
+   48 dígitos = arrecadação/concessionária (energia, água): valor no código; vencimento vem do texto. */
+function fatorToDate(f){
+  f=parseInt(f); if(!f||f<1000) return null;
+  const mk=(base,off)=>{const d=new Date(base); d.setDate(d.getDate()+off); return d;};
+  const d97=mk(new Date(1997,9,7),f);             // base original: 07/10/1997
+  const d25=mk(new Date(2025,1,22),f-1000);       // novo ciclo: fator 1000 = 22/02/2025
+  const now=Date.now(), ok=d=>d.getTime()>now-365*864e5 && d.getTime()<now+3650*864e5;
+  return ok(d25)?d25:ok(d97)?d97:d25;
+}
+function parseBoleto(txt){
+  const out={valor:null,venc:null,linha:null,beneficiario:null};
+  /* linha digitável: sequência de 47/48 dígitos com pontos/espaços, sem atravessar linhas */
+  const seqs=[...txt.matchAll(/[\d][\d.\t ]{40,70}[\d]/g)].map(m=>m[0].replace(/\D/g,''))
+    .filter(d=>d.length===47||d.length===48);
+  if(seqs.length){
+    const d=seqs[0]; out.linha=d;
+    if(d.length===47){
+      const f=fatorToDate(d.substr(33,4));
+      if(f) out.venc=f.toISOString().slice(0,10);
+      const v=parseInt(d.substr(37,10))/100; if(v>0) out.valor=v;
+    }else{
+      /* arrecadação: remove o DV de cada bloco de 12 para reconstruir o código de 44 */
+      const cb=d.substr(0,11)+d.substr(12,11)+d.substr(24,11)+d.substr(36,11);
+      const v=parseInt(cb.substr(4,11))/100; if(v>0) out.valor=v;
+    }
+  }
+  /* vencimento pelo texto (prioritário para contas de concessionária) */
+  const vm=/venc[ií]?ment?o[\s:.]*?(\d{2})\/(\d{2})\/(\d{4})/i.exec(txt);
+  if(vm) out.venc=`${vm[3]}-${vm[2]}-${vm[1]}`;
+  /* beneficiário/emissor */
+  const conc=/(cpfl|enel|energisa|neoenergia|elektro|light|cemig|copel|celesc|coelba|sabesp|sanasa|saneamento|copasa|sanepar|embasa|comgas|vivo|claro|tim|oi\b|unimed|amil|bradesco saude|sulamerica)/i.exec(txt);
+  if(conc) out.beneficiario=conc[1].toUpperCase();
+  else{
+    const bm=/(?:benefici[aá]rio|cedente|pag[aá]vel\s+a|raz[aã]o social)[\s:.-]*([A-ZÀ-Ú][A-Za-zÀ-ú0-9 .&-]{5,50})/i.exec(txt);
+    if(bm) out.beneficiario=bm[1].trim().replace(/\s+/g,' ');
+  }
+  return out;
+}
+let boletoPending=null;
+$('btnPickBoleto').onclick=()=>$('fileBoleto').click();
+$('fileBoleto').onchange=async e=>{
+  const file=e.target.files[0]; e.target.value=''; if(!file)return;
+  $('recBox').innerHTML='<p class="muted">Lendo o boleto…</p>';
+  let txt=''; try{ txt=await extractReceiptText(file); }catch{}
+  const b=parseBoleto(txt), r=parseReceipt(txt||'');
+  boletoPending={file,linha:b.linha};
+  const desc=b.beneficiario||'';
+  const valor=b.valor??r.value, venc=b.venc||r.date||new Date().toISOString().slice(0,10);
+  const cat=guessCat((desc+' '+(txt||'')).slice(0,400),'despesa');
+  $('recBox').innerHTML=`<div class="goal" style="border-left:3px solid var(--gold)">
+    <div class="top"><h3>Nova conta a pagar — ${esc(file.name)}</h3>
+      <span class="nums">${b.linha?'linha digitável lida ✓':'sem linha digitável — confira os dados'}</span></div>
+    <div class="scn-inputs" style="margin-top:.7rem">
+      <div class="field"><label for="bfDesc">Descrição</label><input id="bfDesc" value="${esc(desc)}" placeholder="ex.: Energia CPFL" style="width:200px;font-family:var(--body)"></div>
+      <div class="field"><label for="bfVal">Valor (R$)</label><input id="bfVal" inputmode="decimal" value="${valor?valor.toFixed(2).replace('.',','):''}"></div>
+      <div class="field"><label for="bfDate">Vencimento</label><input id="bfDate" type="date" value="${venc}"></div>
+      <div class="field"><label for="bfCat">Categoria</label><select id="bfCat">${CATS_DESP.map(c=>`<option ${c.n===cat?'selected':''}>${c.n}</option>`).join('')}</select></div>
+    </div>
+    ${b.linha?`<p class="meta" style="margin-top:.6rem;word-break:break-all">Linha digitável: <span style="font-family:var(--mono)">${b.linha}</span></p>`:''}
+    <div class="acts" style="margin-top:.7rem">
+      <button class="btn btn-primary sm" onclick="boletoConfirm()">Cadastrar conta pendente</button>
+      ${b.linha?'<button class="btn btn-ghost sm" onclick="boletoCopy()">Copiar linha digitável</button>':''}
+      <button class="btn btn-danger sm" onclick="recCancel()">Cancelar</button>
+    </div></div>`;
+};
+window.boletoCopy=()=>{
+  if(!boletoPending||!boletoPending.linha)return;
+  try{ navigator.clipboard.writeText(boletoPending.linha).then(()=>toast('Linha digitável copiada — cole no app do banco')); }
+  catch{ prompt('Copie a linha digitável:',boletoPending.linha); }
+};
+window.boletoConfirm=async()=>{
+  const desc=$('bfDesc').value.trim(), val=parseVal($('bfVal').value), date=$('bfDate').value;
+  if(!desc) return toast('Informe a descrição');
+  if(!val) return toast('Informe o valor');
+  if(!date) return toast('Informe o vencimento');
+  const tx={id:uid(),type:'despesa',desc,cat:$('bfCat').value,value:val,date,paid:false};
+  try{
+    const id=uid();
+    await idbPut({id,name:boletoPending.file.name,type:boletoPending.file.type,when:new Date().toISOString(),
+      txId:tx.id,resumo:'Boleto/fatura — '+desc,blob:boletoPending.file});
+    tx.receiptId=id;
+  }catch{}
+  state.transactions.push(tx);
+  boletoPending=null; $('recBox').innerHTML='';
+  if(date.slice(0,7)!==ym(cur)) cur=new Date(+date.slice(0,4),+date.slice(5,7)-1,1);
+  save(); renderAll(); renderRecList();
+  toast('Conta cadastrada como pendente, com o boleto anexado 📎');
+};
+
+/* ================= Investir ================= */
+const QUIZ=[
+ {q:'1. Se a sua carteira caísse 10% em um mês, o que você faria?',o:['Resgataria tudo para não perder mais','Manteria e esperaria recuperar','Aproveitaria o preço baixo para aportar mais']},
+ {q:'2. Em quanto tempo pretende usar a maior parte desse dinheiro?',o:['Em até 2 anos','Entre 2 e 5 anos','Em mais de 5 anos']},
+ {q:'3. Qual é a sua experiência com investimentos?',o:['Só poupança / nunca investi','Tesouro Direto, CDB e fundos simples','Já invisto em ações, FIIs ou fundos arrojados']}
+];
+const CLASSES={
+  pos:{n:'Pós-fixado',ex:'Tesouro Selic, CDB com liquidez diária — é também onde mora a reserva de emergência',c:'#16C784'},
+  ipc:{n:'Atrelado à inflação',ex:'Tesouro IPCA+, debêntures incentivadas — protege o poder de compra no longo prazo',c:'#F0B90B'},
+  pre:{n:'Prefixado',ex:'Tesouro Prefixado, CDB pré — trava a taxa de hoje; bom quando os juros tendem a cair',c:'#58A6FF'},
+  mm:{n:'Multimercado e FIIs',ex:'Fundos multimercado e fundos imobiliários — diversificação com risco intermediário',c:'#A371F7'},
+  acao:{n:'Ações e ETFs',ex:'Bolsa brasileira e internacional — maior potencial e maior oscilação; horizonte de 5+ anos',c:'#EA3943'}
+};
+function perfilCalc(){
+  const a=state.profile.a;
+  if([0,1,2].some(i=>a[i]===undefined)) return null;
+  const s=a[0]+a[1]+a[2]+3;
+  return s<=4?'conservador':s<=7?'moderado':'arrojado';
+}
+function initQuiz(){
+  $('quizBox').innerHTML=QUIZ.map((q,i)=>`<div class="q"><p>${q.q}</p>${q.o.map((o,j)=>`
+    <label><input type="radio" name="q${i}" value="${j}" ${state.profile.a[i]===j?'checked':''}> ${o}</label>`).join('')}</div>`).join('');
+  $('quizBox').querySelectorAll('input[type=radio]').forEach(r=>r.onchange=()=>{
+    state.profile.a[+r.name.slice(1)]=+r.value;
+    state.profile.perfil=perfilCalc(); save(); updateInvest();
+  });
+}
+function pct(s){ const v=parseFloat(String(s).replace(',','.')); return isNaN(v)?null:v; }
+function updateInvest(){
+  renderOffers();
+  renderBest();
+  const perfil=perfilCalc();
+  $('perfilChip').innerHTML=perfil?`<span class="diag ${perfil==='conservador'?'ok':perfil==='moderado'?'warn':'alert'}" style="text-transform:capitalize">${perfil}</span>`:'<span class="diag info">responda as 3 perguntas</span>';
+  const selic=pct(state.cenario.selic), ipca=pct(state.cenario.ipca);
+  $('scnInfo').textContent=state.cenario.when?`Última atualização automática: ${new Date(state.cenario.when).toLocaleDateString('pt-BR')}. Você também pode digitar os valores manualmente.`:'Digite a Selic e o IPCA atuais, ou use o botão para buscar direto do Banco Central (precisa de internet).';
+  if(!perfil||selic===null||ipca===null){
+    $('allocBox').innerHTML='<p class="muted">Para gerar a alocação, responda o questionário de perfil e informe Selic e IPCA no cenário econômico.</p>';
+    return;
+  }
+  /* alocação base por perfil */
+  let a = perfil==='conservador'?{pos:70,ipc:20,pre:10,mm:0,acao:0}
+        : perfil==='moderado'   ?{pos:40,ipc:25,pre:10,mm:15,acao:10}
+        :                        {pos:20,ipc:20,pre:10,mm:20,acao:30};
+  const notes=[];
+  /* ajustes pelo cenário */
+  if(selic>=10){ a.pos+=10; a.pre=Math.max(a.pre-5,0); if(a.acao>0)a.acao=Math.max(a.acao-5,0); else a.ipc=Math.max(a.ipc-5,0);
+    notes.push(`Com a Selic em <strong>${selic.toLocaleString('pt-BR')}% a.a.</strong>, a renda fixa pós-fixada paga muito bem com risco baixo — o cenário favorece aumentar essa fatia e ser mais seletivo no risco.`); }
+  else if(selic<6.5){ a.pos=Math.max(a.pos-10,10); a.pre+=5; if(perfil!=='conservador')a.acao+=5; else a.ipc+=5;
+    notes.push(`Com juros baixos (Selic ${selic.toLocaleString('pt-BR')}%), o pós-fixado rende pouco — prefixados e ativos de risco ganham espaço para quem tolera oscilação.`); }
+  else notes.push(`Selic em patamar intermediário (${selic.toLocaleString('pt-BR')}% a.a.): equilíbrio entre pós-fixado e as demais classes.`);
+  if(ipca>6){ a.ipc+=10; a.pos=Math.max(a.pos-10,10);
+    notes.push(`Inflação pressionada (IPCA ${ipca.toLocaleString('pt-BR')}% em 12 meses): títulos IPCA+ protegem o poder de compra e merecem fatia maior.`); }
+  const juroReal=((1+selic/100)/(1+ipca/100)-1)*100;
+  if(juroReal>=6) notes.push(`O juro real está em torno de <strong>${juroReal.toFixed(1)}% a.a.</strong> — patamar historicamente alto. Travar parte disso em Tesouro IPCA+ de prazo mais longo costuma ser uma janela rara.`);
+  else if(juroReal<2) notes.push(`Juro real baixo (~${juroReal.toFixed(1)}% a.a.): a renda fixa preserva, mas dificilmente multiplica — diversificação pesa mais nesse cenário.`);
+  /* normaliza para 100 */
+  const tot=Object.values(a).reduce((x,y)=>x+y,0);
+  for(const k in a) a[k]=Math.round(a[k]/tot*100);
+  const diff=100-Object.values(a).reduce((x,y)=>x+y,0);
+  a.pos+=diff;
+  $('allocBox').innerHTML=
+    Object.entries(a).filter(([,v])=>v>0).sort((x,y)=>y[1]-x[1]).map(([k,v])=>`
+      <div class="alloc-row">
+        <div class="top"><span><span class="dot" style="background:${CLASSES[k].c}"></span><strong>${CLASSES[k].n}</strong></span><b>${v}%</b></div>
+        <div class="bar"><i style="width:${v}%;background:${CLASSES[k].c}"></i></div>
+        <p class="ex">${CLASSES[k].ex}</p>
+      </div>`).join('')
+    +`<div class="advice" style="margin-top:1rem"><h3>Como ler este cenário</h3>${notes.map(n=>`<p>${n}</p>`).join('')}
+      <p><strong>Ordem de prioridade sempre:</strong> 1) quitar dívidas caras · 2) completar a reserva de emergência (100% em pós-fixado líquido) · 3) só então seguir a alocação acima com o dinheiro de longo prazo.</p></div>`;
+}
+$('scnSelic').onchange=e=>{ state.cenario.selic=e.target.value; save(); updateInvest(); };
+$('scnIpca').onchange=e=>{ state.cenario.ipca=e.target.value; save(); updateInvest(); };
+$('btnBCB').onclick=async()=>{
+  $('btnBCB').disabled=true; $('btnBCB').textContent='Buscando…';
+  try{
+    const [s,i,c]=await Promise.all([432,13522,4389].map(cd=>
+      fetch(`https://api.bcb.gov.br/dados/serie/bcdata.sgs.${cd}/dados/ultimos/1?formato=json`).then(r=>r.json())));
+    state.cenario.selic=s[0].valor.replace('.',','); state.cenario.ipca=i[0].valor.replace('.',',');
+    state.cenario.cdi=c&&c[0]?c[0].valor.replace('.',','):'';
+    state.cenario.when=new Date().toISOString();
+    $('scnSelic').value=state.cenario.selic; $('scnIpca').value=state.cenario.ipca;
+    save(); updateInvest(); toast('Selic, IPCA e CDI atualizados pelo Banco Central');
+  }catch{ toast('Não consegui buscar — preencha manualmente'); }
+  $('btnBCB').disabled=false; $('btnBCB').textContent='Buscar no Banco Central';
+};
+
+/* ================= Ofertas dos bancos (quadro do usuário) ================= */
+/* Segmentação prudencial (Res. CMN 4.553): S1 = 5 maiores; S2 = grandes bancos médios.
+   A lista pode mudar com o tempo — serve como referência rápida; demais caem em S3/S4. */
+const SEG_S1=/banco do brasil|caixa|ita[uú]|bradesco|santander/i;
+const SEG_S2=/btg|safra|citi|banrisul|nordeste|votorantim|\bbv\b|\bxp\b|nubank/i;
+const segDe=b=>SEG_S1.test(b)?'S1':SEG_S2.test(b)?'S2':'S3/S4';
+function renderOffers(){
+  if(!state.offers.length){ $('offerList').innerHTML='<p class="muted">Nenhuma oferta registrada — adicione as taxas que encontrar no app do seu banco ou na corretora.</p>'; return; }
+  $('offerList').innerHTML=state.offers.map(o=>{
+    const lbl=o.modo==='cdi'?`${o.taxa.toLocaleString('pt-BR')}% do CDI`:o.modo==='pre'?`${o.taxa.toLocaleString('pt-BR')}% a.a. pré`:`IPCA + ${o.taxa.toLocaleString('pt-BR')}%`;
+    return `<span class="chip" style="margin:.15rem .25rem .15rem 0;padding:.35rem .7rem">
+      <strong>${esc(o.produto)} ${esc(o.banco)}</strong> · ${lbl} · ${o.prazo?o.prazo+'m':'liq. diária'} · ${segDe(o.banco)}
+      <button class="icon-btn" style="padding:0 .2rem" title="Remover" onclick="offerDel('${o.id}')">✕</button></span>`;
+  }).join('');
+}
+window.offerDel=id=>{ state.offers=state.offers.filter(o=>o.id!==id); save(); renderOffers(); renderBest(); };
+$('btnAddOffer').onclick=()=>{
+  const banco=$('ofBanco').value.trim(), taxa=parseVal($('ofTaxa').value), prazo=Math.max(parseInt($('ofPrazo').value)||0,0);
+  if(!banco) return toast('Informe o banco');
+  if(!taxa) return toast('Informe a taxa (ex.: 110 para 110% do CDI)');
+  state.offers.push({id:uid(),banco,produto:$('ofProd').value,modo:$('ofModo').value,taxa,prazo});
+  $('ofBanco').value='';$('ofTaxa').value='';$('ofPrazo').value='';
+  save(); renderOffers(); renderBest(); toast('Oferta adicionada ao comparativo');
+};
+
+/* ================= Melhores investimentos ================= */
+function renderBest(){
+  const perfil=perfilCalc(), selic=pct(state.cenario.selic), ipca=pct(state.cenario.ipca);
+  if(!perfil||selic===null||ipca===null){
+    $('bestBox').innerHTML='<p class="muted">Responda o questionário de perfil e informe Selic e IPCA acima para gerar o comparativo de produtos.</p>';
+    $('tdInfo').textContent=''; $('bestNote').textContent=''; return;
+  }
+  const P=parseVal($('simVal').value)||10000;
+  const m=Math.min(Math.max(parseInt($('simMeses').value)||24,1),480);
+  const cdiReal=pct(state.cenario.cdi);
+  const cdi=cdiReal!==null?cdiReal:Math.max(selic-0.1,0);
+  const dias=Math.round(m*30.4);
+  const irPct=dias<=180?22.5:dias<=360?20:dias<=720?17.5:15;
+  const gross=t=>P*Math.pow(1+t/100,m/12);
+  const liqIR=t=>{const G=gross(t);return G-(G-P)*(irPct/100);};
+
+  /* taxas reais do Tesouro, se carregadas: pega o título com vencimento mais próximo do prazo */
+  const tdl=state.cenario.tdList||[];
+  const alvo=new Date(); alvo.setMonth(alvo.getMonth()+m);
+  const nearest=fam=>{const c=tdl.filter(x=>x.fam===fam);
+    return c.length?c.slice().sort((a,b)=>Math.abs(new Date(a.mat)-alvo)-Math.abs(new Date(b.mat)-alvo))[0]:null;};
+  const tdSelic=nearest('selic'), tdPre=nearest('pre'), tdIpca=nearest('ipca');
+  const realRate=tdIpca?tdIpca.rate:((1+selic/100)/(1+ipca/100)-1)*100;
+  const ipcaNom=((1+ipca/100)*(1+realRate/100)-1)*100;
+  const preRate=tdPre?tdPre.rate:selic;
+  const poup=selic>8.5?6.17:selic*0.7;
+  const fmtTx=v=>v.toLocaleString('pt-BR',{maximumFractionDigits:2});
+  const ano=s=>s?' '+(new Date(s)).getFullYear():'';
+
+  let items=[
+   {nm:'Tesouro Selic'+ano(tdSelic&&tdSelic.mat),tx:`Selic ${fmtTx(selic)}% a.a.${tdSelic?` + ${fmtTx(tdSelic.rate)}%`:''}`,
+    v:liqIR(selic+(tdSelic?tdSelic.rate:0)),badges:['Tesouro Nacional','Liquidez diária'],live:!!tdSelic,
+    uso:'Reserva de emergência e dinheiro que pode ser sacado a qualquer momento',perfis:['conservador','moderado','arrojado']},
+   {nm:'CDB de liquidez diária (100% do CDI)',tx:`${fmtTx(cdi)}% a.a.`,v:liqIR(cdi),
+    badges:['Garantia FGC até R$ 250 mil','Liquidez diária'],
+    uso:'Alternativa ao Tesouro Selic para a reserva — bancos médios via corretora costumam pagar 100% ou mais',perfis:['conservador','moderado','arrojado']},
+   {nm:'LCI / LCA (≈90% do CDI)',tx:`${fmtTx(cdi*0.9)}% a.a. já líquidos`,v:gross(cdi*0.9),
+    badges:['Isenta de IR','Garantia FGC','Carência ≈90 dias ou mais'],
+    uso:'Curto e médio prazo quando o dinheiro pode ficar parado até o vencimento',perfis:['conservador','moderado','arrojado']},
+   {nm:'CDB com vencimento (≈115% do CDI)',tx:`${fmtTx(cdi*1.15)}% a.a.`,v:liqIR(cdi*1.15),
+    badges:['Garantia FGC','Sem resgate antes do vencimento'],
+    uso:'Médio prazo com vencimento casado com o objetivo (ex.: caixinha com data)',perfis:['conservador','moderado','arrojado']},
+   {nm:'Tesouro Prefixado'+(tdPre?ano(tdPre.mat):' (taxa estimada)'),tx:`${fmtTx(preRate)}% a.a. fixos`,v:liqIR(preRate),
+    badges:['Tesouro Nacional','Oscila antes do vencimento'],live:!!tdPre,
+    uso:'Travar a taxa de hoje apostando na queda dos juros — o ideal é levar até o vencimento',perfis:['moderado','arrojado']},
+   {nm:'Tesouro IPCA+'+ano(tdIpca&&tdIpca.mat),tx:`IPCA + ${fmtTx(realRate)}% a.a.`,v:liqIR(ipcaNom),
+    badges:['Tesouro Nacional','Protege da inflação'],live:!!tdIpca,
+    uso:'Longo prazo e aposentadoria — juro real garantido acima da inflação',perfis:['conservador','moderado','arrojado']},
+   {nm:'Fundos multimercado e FIIs',tx:'retorno variável',v:null,
+    badges:['Risco intermediário','Compare a taxa de administração'],
+    uso:'Diversificação além da renda fixa, na fatia indicada pela alocação acima',perfis:['moderado','arrojado']},
+   {nm:'Ações e ETFs (ex.: BOVA11, IVVB11)',tx:'retorno variável',v:null,
+    badges:['Maior oscilação','Horizonte de 5+ anos'],
+    uso:'Parcela de crescimento de longo prazo — aportes regulares, sem tentar acertar o momento',perfis:['moderado','arrojado']},
+  ].filter(x=>x.perfis.includes(perfil));
+
+  /* ofertas registradas pelo usuário entram na disputa */
+  for(const o of state.offers){
+    const isento=/LCI|LCA/.test(o.produto);
+    const nominal=o.modo==='cdi'?cdi*o.taxa/100:o.modo==='pre'?o.taxa:((1+ipca/100)*(1+o.taxa/100)-1)*100;
+    const lblTx=o.modo==='cdi'?`${fmtTx(o.taxa)}% do CDI = ${fmtTx(nominal)}% a.a.`:o.modo==='pre'?`${fmtTx(o.taxa)}% a.a. fixos`:`IPCA + ${fmtTx(o.taxa)}% a.a.`;
+    const vencNota=o.prazo?(o.prazo<m?`atenção: vence em ${o.prazo} meses, antes do seu prazo de ${m} — o dinheiro precisará ser reinvestido`:`vencimento em ${o.prazo} meses`):'liquidez diária';
+    items.push({nm:`${o.produto} ${o.banco}`,tx:lblTx,v:isento?gross(nominal):liqIR(nominal),
+      badges:[`Banco segmento ${segDe(o.banco)}`,isento?'Isenta de IR':'IR regressivo','FGC até R$ 250 mil por CPF/banco','sua oferta'],
+      uso:`Oferta registrada por você · ${vencNota}`,perfis:[perfil]});
+  }
+
+  items.sort((a,b)=>(b.v??-1)-(a.v??-1));
+  const poupV=gross(poup);
+  $('tdInfo').innerHTML=(cdiReal!==null?`CDI real do BCB: <strong>${fmtTx(cdi)}% a.a.</strong> · `:'')+(state.cenario.tdWhen
+    ?`Taxas reais do Tesouro carregadas em ${new Date(state.cenario.tdWhen).toLocaleDateString('pt-BR')}${state.cenario.tdFonte?` (${state.cenario.tdFonte})`:''} — os títulos marcados com <span class="chip">taxa real</span> usam o papel com vencimento mais próximo do seu prazo.`
+    :'Sem taxas reais carregadas: Prefixado e IPCA+ estão estimados a partir da Selic e do IPCA informados. Clique no botão para buscar as taxas oficiais (precisa de internet).');
+  $('bestBox').innerHTML=items.map((x,i)=>`
+    <div class="goal" ${i===0?'style="border-color:var(--green);border-left:5px solid var(--green)"':''}>
+      <div class="top"><h3>${i===0?'★ ':''}${x.nm}</h3>
+        <span class="nums">${x.v?`${fmt(x.v)} em ${m} meses · <strong style="color:var(--green)">+${((x.v/P-1)*100).toFixed(1)}%</strong> líquidos`:'sem projeção — renda variável'}</span></div>
+      <p class="meta"><strong>${x.tx}</strong> · ${x.uso}</p>
+      <div class="acts">${x.live?'<span class="chip" style="border-color:var(--green);color:var(--green)">taxa real</span>':''}${x.badges.map(b=>`<span class="chip">${b}</span>`).join(' ')}</div>
+    </div>`).join('')
+    +`<div class="goal" style="opacity:.65"><div class="top"><h3>Poupança (só para comparar)</h3>
+      <span class="nums">${fmt(poupV)} em ${m} meses · +${((poupV/P-1)*100).toFixed(1)}%</span></div>
+      <p class="meta">${fmtTx(poup)}% a.a. isentos — repare quanto se perde em relação às opções acima.</p></div>`;
+  $('bestNote').textContent=`Projeções para ${fmt(P)} em ${m} meses, líquidas de IR regressivo (alíquota de ${irPct}% para esse prazo; LCI/LCA e poupança são isentas). Não incluem taxa de custódia da B3 (0,20% a.a. — o Tesouro Selic é isento até R$ 10 mil) nem variações de mercado em caso de venda antecipada. Taxas de CDB/LCI são referências típicas de mercado — confira as ofertas reais na sua corretora.`;
+}
+$('simVal').oninput=renderBest; $('simMeses').oninput=renderBest;
+$('btnTD').onclick=async()=>{
+  $('btnTD').disabled=true; $('btnTD').textContent='Buscando…';
+  /* O site oficial do Tesouro bloqueia consultas de outros sites (Cloudflare/CORS).
+     Tentamos em ordem: oficial → espelho comunitário (cópia exata, ~15 min) → proxy público. */
+  const OF='https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasurybondsinfo.json';
+  const fontes=[
+    {u:OF,nome:'site oficial do Tesouro'},
+    {u:'https://api.radaropcoes.com/bonds.json',nome:'espelho comunitário (radaropcoes)'},
+    {u:'https://api.allorigins.win/raw?url='+encodeURIComponent(OF),nome:'site oficial via proxy'}
+  ];
+  let j=null,fonte='';
+  for(const f of fontes){
+    try{
+      const r=await fetch(f.u,{signal:AbortSignal.timeout?AbortSignal.timeout(12000):undefined});
+      const d=await r.json();
+      if(d&&d.response&&d.response.TrsrBdTradgList){ j=d; fonte=f.nome; break; }
+    }catch{}
+  }
+  try{
+    if(!j) throw 0;
+    const arr=[];
+    for(const x of j.response.TrsrBdTradgList){
+      const b=x.TrsrBd; if(!b||!(b.anulInvstmtRate>0)) continue;
+      const fam=/Selic/i.test(b.nm)?'selic':/Prefixado/i.test(b.nm)?'pre':/IPCA/i.test(b.nm)?'ipca':null;
+      if(!fam||/Juros Semestrais|Renda\+|Educa\+/i.test(b.nm)) continue;
+      arr.push({fam,nm:b.nm,rate:b.anulInvstmtRate,mat:b.mtrtyDt});
+    }
+    if(!arr.length) throw 0;
+    state.cenario.tdList=arr; state.cenario.tdWhen=new Date().toISOString(); state.cenario.tdFonte=fonte;
+    save(); renderBest(); toast(`${arr.length} títulos carregados — fonte: ${fonte}`);
+  }catch{ toast('Nenhuma fonte do Tesouro respondeu agora — seguindo com as estimativas pela Selic/IPCA. Tente de novo mais tarde.'); }
+  $('btnTD').disabled=false; $('btnTD').textContent='Buscar taxas reais do Tesouro Direto';
+};
+
+/* ================= Render geral ================= */
+function renderAll(){ renderHeader(); renderVisao(); renderLanc(); renderOrc(); renderOrient(); renderCaixa(); renderFixed(); updateInvest(); renderStat(); }
+function renderStat(){
+  $('statLine').textContent=`${state.transactions.length} lançamentos registrados no total.`;
+}
+
+/* ================= Ações ================= */
+window.togglePaid=id=>{ const t=state.transactions.find(t=>t.id===id); if(t){t.paid=!t.paid; save(); renderAll();} };
+window.delTx=id=>{ if(confirm('Excluir este lançamento?')){ state.transactions=state.transactions.filter(t=>t.id!==id); save(); renderAll(); toast('Lançamento excluído'); } };
+window.openEdit=id=>{ const t=state.transactions.find(t=>t.id===id); if(!t)return;
+  editId=id; setTipo(t.type);
+  $('mDesc').value=t.desc; $('mVal').value=t.value.toFixed(2).replace('.',','); $('mData').value=t.date;
+  fillCatSelect($('mCat'),t.type); $('mCat').value=t.cat; $('mPago').checked=t.paid;
+  $('modalTitle').textContent='Editar lançamento'; $('modal').showModal();
+};
+function parseVal(s){ const v=parseFloat(String(s).replace(/\./g,'').replace(',','.')); return isNaN(v)?0:Math.round(v*100)/100; }
+function fillCatSelect(sel,tipo){
+  sel.innerHTML=(tipo==='receita'?CATS_REC:CATS_DESP).map(c=>`<option>${c.n}</option>`).join('');
+}
+function setTipo(t){ modalTipo=t;
+  $('segDesp').classList.toggle('on',t==='despesa'); $('segRec').classList.toggle('on',t==='receita');
+  fillCatSelect($('mCat'),t);
+}
+
+/* modal abrir/salvar */
+$('fabAdd').onclick=()=>{ editId=null; setTipo('despesa');
+  $('mDesc').value=''; $('mVal').value='';
+  const today=new Date(); const d=(today.getFullYear()===cur.getFullYear()&&today.getMonth()===cur.getMonth())?today:cur;
+  $('mData').value=d.toISOString().slice(0,10); $('mPago').checked=true;
+  $('modalTitle').textContent='Novo lançamento'; $('modal').showModal(); $('mDesc').focus();
+};
+$('segDesp').onclick=()=>setTipo('despesa'); $('segRec').onclick=()=>setTipo('receita');
+$('mCancel').onclick=()=>$('modal').close();
+$('mSave').onclick=()=>{
+  const desc=$('mDesc').value.trim(), val=parseVal($('mVal').value), date=$('mData').value;
+  if(!desc) return toast('Informe a descrição'); if(!val) return toast('Informe um valor válido'); if(!date) return toast('Informe a data');
+  const tx={ id:editId||uid(), type:modalTipo, desc, value:val, date, cat:$('mCat').value, paid:$('mPago').checked };
+  if(editId){ const i=state.transactions.findIndex(t=>t.id===editId); state.transactions[i]=tx; }
+  else state.transactions.push(tx);
+  save(); $('modal').close();
+  if(date.slice(0,7)!==ym(cur)){ cur=new Date(+date.slice(0,4),+date.slice(5,7)-1,1); }
+  renderAll(); toast(editId?'Lançamento atualizado':'Lançamento salvo');
+};
+
+/* navegação de mês e abas */
+$('prevM').onclick=()=>{ cur.setMonth(cur.getMonth()-1); renderAll(); };
+$('nextM').onclick=()=>{ cur.setMonth(cur.getMonth()+1); renderAll(); };
+$('btnToday').onclick=()=>{ cur=new Date(); cur.setDate(1); renderAll(); };
+document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
+  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+  document.querySelectorAll('section.tab').forEach(x=>x.classList.remove('active'));
+  b.classList.add('active'); $('tab-'+b.dataset.tab).classList.add('active');
+});
+
+/* filtros */
+$('fBusca').oninput=e=>{filters.busca=e.target.value.toLowerCase();renderLanc()};
+$('fTipo').onchange=e=>{filters.tipo=e.target.value;renderLanc()};
+$('fCat').onchange=e=>{filters.cat=e.target.value;renderLanc()};
+$('fStatus').onchange=e=>{filters.status=e.target.value;renderLanc()};
+$('fCat').innerHTML='<option value="">Todas as categorias</option>'+[...new Set([...CATS_DESP,...CATS_REC].map(c=>c.n))].map(n=>`<option>${n}</option>`).join('');
+
+/* backup */
+$('btnExport').onclick=async()=>{
+  let receipts=[];
+  try{
+    const recs=await idbAll();
+    receipts=await Promise.all(recs.map(async r=>({id:r.id,name:r.name,type:r.type,when:r.when,txId:r.txId,resumo:r.resumo,b64:await blobB64(r.blob)})));
+  }catch{}
+  const blob=new Blob([JSON.stringify({...state,receipts},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob);
+  a.download=`caderneta-backup-${new Date().toISOString().slice(0,10)}.json`; a.click();
+  toast('Backup exportado');
+};
+$('btnImport').onclick=()=>$('fileImport').click();
+$('fileImport').onchange=e=>{
+  const f=e.target.files[0]; if(!f)return;
+  const r=new FileReader();
+  r.onload=async()=>{ try{
+      const d=JSON.parse(r.result);
+      if(!Array.isArray(d.transactions)) throw 0;
+      if(confirm(`Importar ${d.transactions.length} lançamentos? Isso substitui os dados atuais.`)){
+        const receipts=Array.isArray(d.receipts)?d.receipts:[]; delete d.receipts;
+        state=d;
+        state.goals=state.goals||[]; state.reserve=state.reserve||{balance:0,target:null};
+        state.profile=state.profile||{a:{},perfil:null}; state.cenario=state.cenario||{selic:'',ipca:'',when:null};
+        state.fixed=state.fixed||[]; state.offers=state.offers||[];
+        save(); initQuiz(); $('scnSelic').value=state.cenario.selic||''; $('scnIpca').value=state.cenario.ipca||'';
+        if(receipts.length){ try{ await idbClear();
+          for(const rc of receipts){ const blob=await (await fetch(rc.b64)).blob(); await idbPut({id:rc.id,name:rc.name,type:rc.type,when:rc.when,txId:rc.txId,resumo:rc.resumo,blob}); }
+        }catch{ toast('Dados restaurados, mas não consegui restaurar os comprovantes'); } }
+        renderAll(); renderRecList(); toast('Backup restaurado');
+      }
+    }catch{ toast('Arquivo inválido'); } };
+  r.readAsText(f); e.target.value='';
+};
+$('btnCSV').onclick=()=>{
+  const k=ym(cur), rows=[['data','tipo','descricao','categoria','valor','status']];
+  for(const t of monthTx(k)) rows.push([t.date,t.type,t.desc.replace(/;/g,','),t.cat,t.value.toFixed(2).replace('.',','),t.paid?'pago':'pendente']);
+  const csv=rows.map(r=>r.join(';')).join('\n');
+  const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob(['\ufeff'+csv],{type:'text/csv'}));
+  a.download=`caderneta-${k}.csv`; a.click(); toast('CSV exportado');
+};
+$('btnWipe').onclick=()=>{
+  if(confirm('Apagar TODOS os dados? Esta ação não tem volta.') && confirm('Tem certeza mesmo? Exporte um backup antes, se quiser.')){
+    state={transactions:[],budgets:{},goals:[],reserve:{balance:0,target:null},profile:{a:{},perfil:null},cenario:{selic:'',ipca:'',when:null},fixed:[],offers:[]};
+    idbClear().then(renderRecList).catch(()=>{});
+    save(); initQuiz(); $('scnSelic').value=''; $('scnIpca').value=''; renderAll(); toast('Dados apagados');
+  }
+};
+
+initQuiz();
+$('scnSelic').value=state.cenario.selic||''; $('scnIpca').value=state.cenario.ipca||'';
+renderAll();
+renderRecList();
+if('serviceWorker' in navigator && location.protocol.startsWith('http'))
+  navigator.serviceWorker.register('sw.js').catch(()=>{});
+const _nf=applyFixed(ym(new Date()),true);
+if(_nf) toast(`${_nf} conta(s) fixa(s) do mês lançada(s) como pendentes`);
+</script>
+</body>
+</html>

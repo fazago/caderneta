@@ -1,0 +1,55 @@
+CADERNETA — COMO INSTALAR NO CELULAR (PWA)
+============================================
+
+O pacote contém: index.html, manifest.json, sw.js, icon-192.png, icon-512.png.
+Importante: SEUS DADOS NÃO VÃO PARA A INTERNET. O site hospedado é só o
+"programa"; os lançamentos, comprovantes e tudo mais ficam gravados no
+próprio celular (localStorage/IndexedDB do navegador).
+
+PASSO 1 — PUBLICAR (uma vez só, ~10 minutos, de graça)
+------------------------------------------------------
+Opção GitHub Pages:
+ 1. Crie uma conta em github.com (se não tiver).
+ 2. Crie um repositório novo, ex.: "caderneta" (pode ser público — lembre:
+    o código não contém seus dados).
+ 3. Envie os 5 arquivos desta pasta (botão "Add file" > "Upload files").
+ 4. Em Settings > Pages > Source, escolha "Deploy from a branch",
+    branch "main", pasta "/ (root)" e salve.
+ 5. Em ~1 minuto o endereço fica disponível:
+    https://SEU-USUARIO.github.io/caderneta/
+
+Opção ainda mais rápida (sem conta git): app.netlify.com/drop —
+arraste a pasta inteira e ele devolve um endereço https na hora.
+
+Dica: como você já usa o Claude Code, ele faz o passo 1 inteiro por você
+("crie um repositório caderneta e publique esta pasta no GitHub Pages").
+
+PASSO 2 — INSTALAR NO CELULAR
+-----------------------------
+Android (Chrome):
+ 1. Abra o endereço no Chrome.
+ 2. Menu ⋮  > "Adicionar à tela inicial" / "Instalar app".
+ 3. Pronto: ícone na tela, abre em tela cheia e funciona offline.
+
+iPhone (Safari):
+ 1. Abra o endereço no Safari.
+ 2. Botão Compartilhar > "Adicionar à Tela de Início".
+
+PASSO 3 — USO NO DIA A DIA
+--------------------------
+- Ao enviar comprovante pelo celular, o botão já oferece tirar FOTO
+  direto da câmera.
+- Os dados do celular e do computador são independentes (cada navegador
+  guarda os seus). Para levar de um para o outro: Backup > Exportar no
+  aparelho de origem, mande o .json por WhatsApp/Drive, e Importar no
+  destino.
+- Exporte o backup de tempos em tempos — é o seu seguro contra limpeza
+  de dados do navegador.
+- No iPhone, use o app instalado (não a aba do Safari): sites não
+  instalados podem ter os dados apagados pelo sistema após semanas sem uso.
+
+ATUALIZAÇÕES FUTURAS
+--------------------
+Quando eu te entregar uma nova versão do index.html, basta substituir o
+arquivo no GitHub/Netlify. O app no celular se atualiza sozinho na
+próxima abertura (e seus dados permanecem, pois ficam no aparelho).
