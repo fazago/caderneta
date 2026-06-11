@@ -1554,6 +1554,14 @@ $('btnAddOffer').onclick=()=>{
   save(); renderOffers(); renderBest(); toast('Oferta adicionada ao comparativo');
 };
 
+/* Taxas de referência embutidas — usadas quando nenhuma fonte online responde.
+   Fonte: imprensa financeira, pregão de 05/06/2026 (Seu Dinheiro). Atualizadas a cada nova versão do app. */
+const TD_REF={when:'2026-06-05',fonte:'referência embutida de 05/06/2026',list:[
+ {fam:'ipca',nm:'Tesouro IPCA+ 2032',rate:8.23,mat:'2032-08-15'},
+ {fam:'ipca',nm:'Tesouro IPCA+ 2040',rate:7.54,mat:'2040-08-15'},
+ {fam:'pre',nm:'Tesouro Prefixado 2029',rate:14.00,mat:'2029-01-01'}
+]};
+
 /* ================= Melhores investimentos ================= */
 function renderBest(){
   const perfil=perfilCalc(), selic=pct(state.cenario.selic), ipca=pct(state.cenario.ipca);
@@ -1571,7 +1579,8 @@ function renderBest(){
   const liqIR=t=>{const G=gross(t);return G-(G-P)*(irPct/100);};
 
   /* taxas reais do Tesouro, se carregadas: pega o título com vencimento mais próximo do prazo */
-  const tdl=state.cenario.tdList||[];
+  const aoVivo=!!(state.cenario.tdList&&state.cenario.tdList.length);
+  const tdl=aoVivo?state.cenario.tdList:TD_REF.list;
   const alvo=new Date(); alvo.setMonth(alvo.getMonth()+m);
   const nearest=fam=>{const c=tdl.filter(x=>x.fam===fam);
     return c.length?c.slice().sort((a,b)=>Math.abs(new Date(a.mat)-alvo)-Math.abs(new Date(b.mat)-alvo))[0]:null;};
@@ -1623,15 +1632,15 @@ function renderBest(){
 
   items.sort((a,b)=>(b.v??-1)-(a.v??-1));
   const poupV=gross(poup);
-  $('tdInfo').innerHTML=(cdiReal!==null?`CDI real do BCB: <strong>${fmtTx(cdi)}% a.a.</strong> · `:'')+(state.cenario.tdWhen
-    ?`Taxas reais do Tesouro carregadas em ${new Date(state.cenario.tdWhen).toLocaleDateString('pt-BR')}${state.cenario.tdFonte?` (${state.cenario.tdFonte})`:''} — os títulos marcados com <span class="chip">taxa real</span> usam o papel com vencimento mais próximo do seu prazo.`
-    :'Sem taxas reais carregadas: Prefixado e IPCA+ estão estimados a partir da Selic e do IPCA informados. Clique no botão para buscar as taxas oficiais (precisa de internet).');
+  $('tdInfo').innerHTML=(cdiReal!==null?`CDI real do BCB: <strong>${fmtTx(cdi)}% a.a.</strong> · `:'')+(aoVivo
+    ?`Taxas do Tesouro carregadas ao vivo em ${new Date(state.cenario.tdWhen).toLocaleDateString('pt-BR')}${state.cenario.tdFonte?` (${state.cenario.tdFonte})`:''} — cada família usa o papel com vencimento mais próximo do seu prazo.`
+    :`Usando <strong>taxas de referência de ${TD_REF.when.split('-').reverse().join('/')}</strong> embutidas no app (o site do Tesouro vem bloqueando consultas externas). Toque no botão para tentar atualizar ao vivo.`);
   $('bestBox').innerHTML=items.map((x,i)=>`
     <div class="goal" ${i===0?'style="border-color:var(--green);border-left:5px solid var(--green)"':''}>
       <div class="top"><h3>${i===0?'★ ':''}${x.nm}</h3>
         <span class="nums">${x.v?`${fmt(x.v)} em ${m} meses · <strong style="color:var(--green)">+${((x.v/P-1)*100).toFixed(1)}%</strong> líquidos`:'sem projeção — renda variável'}</span></div>
       <p class="meta"><strong>${x.tx}</strong> · ${x.uso}</p>
-      <div class="acts">${x.live?'<span class="chip" style="border-color:var(--green);color:var(--green)">taxa real</span>':''}${x.badges.map(b=>`<span class="chip">${b}</span>`).join(' ')}</div>
+      <div class="acts">${x.live?(aoVivo?'<span class="chip" style="border-color:var(--green);color:var(--green)">taxa real</span>':'<span class="chip" style="border-color:var(--gold);color:var(--gold)">referência 05/06</span>'):''}${x.badges.map(b=>`<span class="chip">${b}</span>`).join(' ')}</div>
     </div>`).join('')
     +`<div class="goal" style="opacity:.65"><div class="top"><h3>Poupança (só para comparar)</h3>
       <span class="nums">${fmt(poupV)} em ${m} meses · +${((poupV/P-1)*100).toFixed(1)}%</span></div>
@@ -1646,8 +1655,9 @@ $('btnTD').onclick=async()=>{
   const OF='https://www.tesourodireto.com.br/json/br/com/b3/tesourodireto/service/api/treasurybondsinfo.json';
   const fontes=[
     {u:OF,nome:'site oficial do Tesouro'},
-    {u:'https://api.radaropcoes.com/bonds.json',nome:'espelho comunitário (radaropcoes)'},
-    {u:'https://api.allorigins.win/raw?url='+encodeURIComponent(OF),nome:'site oficial via proxy'}
+    {u:'https://corsproxy.io/?url='+encodeURIComponent(OF),nome:'oficial via proxy 1'},
+    {u:'https://api.allorigins.win/raw?url='+encodeURIComponent(OF),nome:'oficial via proxy 2'},
+    {u:'https://api.codetabs.com/v1/proxy?quest='+encodeURIComponent(OF),nome:'oficial via proxy 3'}
   ];
   let j=null,fonte='';
   for(const f of fontes){
@@ -1669,7 +1679,7 @@ $('btnTD').onclick=async()=>{
     if(!arr.length) throw 0;
     state.cenario.tdList=arr; state.cenario.tdWhen=new Date().toISOString(); state.cenario.tdFonte=fonte;
     save(); renderBest(); toast(`${arr.length} títulos carregados — fonte: ${fonte}`);
-  }catch{ toast('Nenhuma fonte do Tesouro respondeu agora — seguindo com as estimativas pela Selic/IPCA. Tente de novo mais tarde.'); }
+  }catch{ renderBest(); toast('O Tesouro está bloqueando consultas externas no momento — usando as taxas de referência embutidas no app. Tente de novo em outro horário.'); }
   $('btnTD').disabled=false; $('btnTD').textContent='Buscar taxas reais do Tesouro Direto';
 };
 
