@@ -84,7 +84,11 @@ section.tab.active{display:block;animation:fade .18s ease}
 @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .grid{display:grid;gap:1.1rem}
 .grid.two{grid-template-columns:1fr 1fr}
-@media(max-width:760px){.grid.two{grid-template-columns:1fr}.ledger .saldo .big{font-size:1.9rem}#spark{display:none}}
+@media(max-width:760px){
+  .grid.two{grid-template-columns:1fr}
+  .ledger .saldo .big{font-size:1.9rem}
+  #spark{margin-left:0;min-width:0;width:100%;margin-top:.5rem}
+}
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.2rem 1.3rem;position:relative}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius) var(--radius) 0 0;background:linear-gradient(90deg,var(--green),transparent 40%)}
 .card h2{font-family:var(--display);font-size:.92rem;font-weight:600;margin-bottom:.95rem;display:flex;align-items:center;justify-content:space-between;letter-spacing:.05em;text-transform:uppercase}
@@ -591,7 +595,7 @@ function renderSpark(k){
   for(const gy of [h*0.25,h*0.5,h*0.75]) grid+=`<line x1="${padX}" y1="${gy}" x2="${w-padX}" y2="${gy}" stroke="#16202B"/>`;
   if(mn<0&&mx>0) grid+=`<line x1="${padX}" y1="${y(0)}" x2="${w-padX}" y2="${y(0)}" stroke="#1E2A36" stroke-dasharray="3 3"/>`;
   const area=path+` L ${ex} ${h-2} L ${padX} ${h-2} Z`;
-  $('spark').innerHTML=`<svg width="${w}" height="${h}" aria-hidden="true">
+  $('spark').innerHTML=`<svg viewBox="0 0 ${w} ${h}" style="width:100%;height:auto;display:block" aria-hidden="true">
     <defs>
       <linearGradient id="gradS" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0" stop-color="${cor}" stop-opacity="0.4"/>
