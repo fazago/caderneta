@@ -85,9 +85,22 @@ section.tab.active{display:block;animation:fade .18s ease}
 .grid{display:grid;gap:1.1rem}
 .grid.two{grid-template-columns:1fr 1fr}
 @media(max-width:760px){
+  html{font-size:17.5px}
   .grid.two{grid-template-columns:1fr}
-  .ledger .saldo .big{font-size:1.9rem}
+  .ledger .saldo .big{font-size:2rem}
+  .ledger{gap:1.2rem}
   #spark{margin-left:0;min-width:0;width:100%;margin-top:.5rem}
+  nav.tabs{display:none}
+  .fab{display:none}
+  .bnav{display:flex}
+  main{margin-bottom:6.5rem}
+  .btn{padding:.85rem 1.15rem;font-size:.95rem}
+  .btn.sm{padding:.6rem .9rem;font-size:.85rem}
+  .filters input,.filters select,.field input,.field select,.scn-inputs input{padding:.8rem;font-size:1rem}
+  table.lanc{font-size:.95rem}
+  table.lanc td{padding:.7rem .5rem}
+  .icon-btn{font-size:1.2rem;padding:.4rem .45rem}
+  .card{padding:1.1rem 1rem}
 }
 .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:1.2rem 1.3rem;position:relative}
 .card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;border-radius:var(--radius) var(--radius) 0 0;background:linear-gradient(90deg,var(--green),transparent 40%)}
@@ -145,6 +158,26 @@ td.val.in{color:var(--green)} td.val.out{color:var(--red)}
 .bars6 .b.in{background:linear-gradient(180deg,#16C784 0%,rgba(22,199,132,.55) 60%,rgba(22,199,132,.12) 100%);box-shadow:0 0 12px rgba(22,199,132,.45),0 -1px 6px rgba(22,199,132,.6)}
 .bars6 .b.out{background:linear-gradient(180deg,#EA3943 0%,rgba(234,57,67,.55) 60%,rgba(234,57,67,.12) 100%);box-shadow:0 0 12px rgba(234,57,67,.45),0 -1px 6px rgba(234,57,67,.6)}
 .bars6 .lbl{font-size:.66rem;color:var(--ink-soft);text-transform:uppercase;font-family:var(--mono)}
+
+
+/* ---------- Início: ações rápidas e módulos ---------- */
+.qa{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.7rem}
+.qa-btn{display:flex;flex-direction:column;align-items:center;gap:.4rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1.05rem .6rem;color:var(--ink);font-weight:600;font-size:.92rem;transition:border-color .15s}
+.qa-btn span{font-size:1.6rem}
+.qa-btn:hover,.qa-btn:active{border-color:var(--green)}
+.mods{display:grid;grid-template-columns:repeat(auto-fill,minmax(155px,1fr));gap:.7rem}
+.mod{display:flex;flex-direction:column;align-items:flex-start;gap:.25rem;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:1rem;color:var(--ink);text-align:left;transition:border-color .15s}
+.mod span{font-size:1.55rem}
+.mod b{font-size:.95rem;font-family:var(--display)}
+.mod small{color:var(--ink-soft);font-size:.74rem;line-height:1.35}
+.mod:hover,.mod:active{border-color:var(--green)}
+
+/* ---------- Navegação inferior (celular) ---------- */
+.bnav{position:fixed;left:0;right:0;bottom:0;display:none;background:#0B1119;border-top:1px solid var(--line);z-index:80;justify-content:space-around;align-items:center;padding:.3rem .4rem calc(.35rem + env(safe-area-inset-bottom))}
+.bnav button{background:none;border:none;color:var(--ink-soft);display:flex;flex-direction:column;align-items:center;gap:.12rem;font-size:.6rem;font-family:var(--mono);letter-spacing:.05em;padding:.25rem .45rem;border-radius:8px;min-width:54px;text-transform:uppercase}
+.bnav button span{font-size:1.3rem}
+.bnav button.active{color:var(--green)}
+.bnav .badd{width:54px;height:54px;border-radius:50%;background:var(--green);color:#04110B;font-size:1.9rem;margin-top:-24px;box-shadow:0 0 0 4px #0B1119,0 6px 18px rgba(22,199,132,.45);display:flex;align-items:center;justify-content:center;min-width:54px;padding:0}
 
 /* ---------- Modal ---------- */
 dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:440px;width:92vw;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(0,0,0,.6)}
@@ -236,9 +269,10 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       <div id="spark"></div>
     </div>
     <nav class="tabs">
-      <button data-tab="visao" class="active">Visão geral</button>
+      <button data-tab="home" class="active">Início</button>
+      <button data-tab="visao">Visão geral</button>
       <button data-tab="lanc">Lançamentos</button>
-      <button data-tab="auto">Fixas &amp; Extrato</button>
+      <button data-tab="auto">Contas &amp; Docs</button>
       <button data-tab="orc">Orçamento</button>
       <button data-tab="orient">Orientador</button>
       <button data-tab="caixa">Caixinhas</button>
@@ -249,10 +283,42 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
 </header>
 
 <main>
+  <div class="notice" id="storageNotice2-placeholder" style="display:none"></div>
   <div class="notice" id="storageNotice">⚠ Armazenamento local indisponível neste ambiente — os dados não serão salvos ao fechar a página. Abra o arquivo diretamente no seu navegador para que tudo fique gravado.</div>
 
+
+  <!-- INÍCIO -->
+  <section class="tab active" id="tab-home">
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Ações rápidas</h2>
+      <div class="qa">
+        <button class="qa-btn" onclick="newTx('despesa')"><span>➖</span>Nova despesa</button>
+        <button class="qa-btn" onclick="newTx('receita')"><span>➕</span>Nova receita</button>
+        <button class="qa-btn" onclick="goTab('auto');$('fileBoleto').click()"><span>🧾</span>Cadastrar boleto</button>
+        <button class="qa-btn" onclick="goTab('auto');$('fileRec').click()"><span>✅</span>Dar baixa</button>
+      </div>
+    </div>
+    <div class="card" style="margin-bottom:1.1rem">
+      <h2>Diagnóstico do mês <span id="homeDiag"></span></h2>
+      <p class="muted" id="homeLine"></p>
+    </div>
+    <div class="card">
+      <h2>Módulos</h2>
+      <div class="mods">
+        <button class="mod" onclick="goTab('visao')"><span>📊</span><b>Visão geral</b><small>gráficos e orçamento do mês</small></button>
+        <button class="mod" onclick="goTab('lanc')"><span>📋</span><b>Lançamentos</b><small>extrato, busca e edição</small></button>
+        <button class="mod" onclick="goTab('auto')"><span>🧾</span><b>Contas &amp; Docs</b><small>fixas, boletos, extratos, comprovantes</small></button>
+        <button class="mod" onclick="goTab('orc')"><span>🎯</span><b>Orçamento</b><small>limites por categoria</small></button>
+        <button class="mod" onclick="goTab('orient')"><span>🧭</span><b>Orientador</b><small>o que fazer com o mês</small></button>
+        <button class="mod" onclick="goTab('caixa')"><span>🐷</span><b>Caixinhas</b><small>reserva e objetivos</small></button>
+        <button class="mod" onclick="goTab('invest')"><span>📈</span><b>Investir</b><small>perfil, cenário e ranking</small></button>
+        <button class="mod" onclick="goTab('backup')"><span>💾</span><b>Backup</b><small>exportar e importar tudo</small></button>
+      </div>
+    </div>
+  </section>
+
   <!-- VISÃO GERAL -->
-  <section class="tab active" id="tab-visao">
+  <section class="tab" id="tab-visao">
     <div class="grid two">
       <div class="card">
         <h2>Despesas por categoria</h2>
@@ -424,6 +490,14 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
     </div>
   </section>
 </main>
+
+<nav class="bnav">
+  <button data-tab="home"><span>🏠</span>Início</button>
+  <button data-tab="lanc"><span>📋</span>Lançam.</button>
+  <button class="badd" onclick="newTx('despesa')" aria-label="Novo lançamento">＋</button>
+  <button data-tab="auto"><span>🧾</span>Contas</button>
+  <button data-tab="caixa"><span>🐷</span>Caixinhas</button>
+</nav>
 
 <button class="fab" id="fabAdd" aria-label="Novo lançamento">+</button>
 
@@ -719,6 +793,8 @@ function renderOrient(){
   if(!tx.length){
     $('diagChip').innerHTML='<span class="diag info">sem dados</span>';
     $('diagLine').textContent='Registre as receitas e despesas do mês para receber orientações.';
+    $('homeDiag').innerHTML='<span class="diag info">sem dados</span>';
+    $('homeLine').textContent='Use as ações rápidas acima para registrar a primeira receita ou despesa.';
     $('adviceList').innerHTML=`<div class="advice"><h3>Comece pelo básico</h3>
       <p>Lance primeiro as <strong>receitas fixas</strong> (salários) e as <strong>contas essenciais</strong> (moradia, alimentação, transporte, saúde). Com poucos lançamentos o Orientador já consegue dizer se o mês fecha no azul ou no vermelho.</p></div>`;
     return;
@@ -804,6 +880,7 @@ function renderOrient(){
   else if(tips.some(x=>x.l==='warn')){ diag='<span class="diag warn">atenção</span>'; line=`O mês fecha positivo em ${fmt(proj)}, mas há pontos que pedem cuidado.`; }
   else { diag='<span class="diag ok">no azul</span>'; line=`Tudo em ordem: previsão de sobra de ${fmt(proj)} ao fim do mês.`; }
   $('diagChip').innerHTML=diag; $('diagLine').textContent=line;
+  $('homeDiag').innerHTML=diag; $('homeLine').textContent=line;
   $('adviceList').innerHTML=tips.map(x=>`<div class="advice ${x.l}"><h3>${x.h}</h3>${x.b}</div>`).join('');
 }
 
@@ -1572,12 +1649,14 @@ function setTipo(t){ modalTipo=t;
 }
 
 /* modal abrir/salvar */
-$('fabAdd').onclick=()=>{ editId=null; setTipo('despesa');
+function newTx(tipo){ editId=null; setTipo(tipo||'despesa');
   $('mDesc').value=''; $('mVal').value='';
   const today=new Date(); const d=(today.getFullYear()===cur.getFullYear()&&today.getMonth()===cur.getMonth())?today:cur;
   $('mData').value=d.toISOString().slice(0,10); $('mPago').checked=true;
   $('modalTitle').textContent='Novo lançamento'; $('modal').showModal(); $('mDesc').focus();
-};
+}
+window.newTx=newTx;
+$('fabAdd').onclick=()=>newTx('despesa');
 $('segDesp').onclick=()=>setTipo('despesa'); $('segRec').onclick=()=>setTipo('receita');
 $('mCancel').onclick=()=>$('modal').close();
 $('mSave').onclick=()=>{
@@ -1595,11 +1674,13 @@ $('mSave').onclick=()=>{
 $('prevM').onclick=()=>{ cur.setMonth(cur.getMonth()-1); renderAll(); };
 $('nextM').onclick=()=>{ cur.setMonth(cur.getMonth()+1); renderAll(); };
 $('btnToday').onclick=()=>{ cur=new Date(); cur.setDate(1); renderAll(); };
-document.querySelectorAll('nav.tabs button').forEach(b=>b.onclick=()=>{
-  document.querySelectorAll('nav.tabs button').forEach(x=>x.classList.remove('active'));
+window.goTab=name=>{
+  document.querySelectorAll('nav.tabs button, .bnav button[data-tab]').forEach(x=>x.classList.toggle('active',x.dataset.tab===name));
   document.querySelectorAll('section.tab').forEach(x=>x.classList.remove('active'));
-  b.classList.add('active'); $('tab-'+b.dataset.tab).classList.add('active');
-});
+  $('tab-'+name).classList.add('active');
+  window.scrollTo({top:0,behavior:'instant'});
+};
+document.querySelectorAll('nav.tabs button, .bnav button[data-tab]').forEach(b=>b.onclick=()=>goTab(b.dataset.tab));
 
 /* filtros */
 $('fBusca').oninput=e=>{filters.busca=e.target.value.toLowerCase();renderLanc()};
