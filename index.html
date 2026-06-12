@@ -219,6 +219,22 @@ nav.tabs button:nth-child(5){animation-delay:.25s}nav.tabs button:nth-child(6){a
 nav.tabs button:nth-child(7){animation-delay:.35s}nav.tabs button:nth-child(8){animation-delay:.4s}
 nav.tabs button:nth-child(9){animation-delay:.45s}
 
+
+/* ---------- Vitrine de produtos (estilo Tesouro Direto) ---------- */
+.prods{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:1rem}
+.prod{background:var(--panel);border:1px solid var(--line);border-radius:14px;overflow:hidden;display:flex;flex-direction:column}
+.prod.top{border-color:var(--green);box-shadow:0 0 20px rgba(22,199,132,.2)}
+.prod-tag{background:var(--green);color:#04110B;font-family:var(--mono);font-size:.68rem;font-weight:700;letter-spacing:.12em;text-transform:uppercase;text-align:center;padding:.45rem .5rem}
+.prod.top .prod-tag{background:var(--gold);color:#1A1400}
+.prod-name{font-family:var(--display);font-weight:600;text-align:center;font-size:1.18rem;margin:.95rem .8rem .05rem;color:var(--green)}
+.prod-year{font-family:var(--display);font-weight:700;text-align:center;font-size:2.3rem;letter-spacing:.01em;margin-bottom:.65rem}
+.prod-row{display:flex;gap:.6rem;align-items:flex-start;padding:.6rem 1rem;border-top:1px solid var(--line-soft);font-size:.92rem;color:var(--ink-soft);line-height:1.4}
+.prod-row b{display:block;color:var(--ink);font-size:.74rem;text-transform:uppercase;letter-spacing:.08em;font-family:var(--mono);margin-bottom:.15rem}
+.prod-row .ic{font-size:1.05rem;line-height:1.4}
+.prod-badges{padding:.6rem 1rem .2rem;display:flex;flex-wrap:wrap;gap:.3rem;margin-top:auto}
+.prod-cta{display:block;background:var(--gold);color:#1A1400;text-align:center;font-weight:800;font-family:var(--display);letter-spacing:.07em;font-size:.84rem;padding:.85rem;margin:.6rem 1rem 1rem;border-radius:999px;text-decoration:none;transition:filter .15s}
+.prod-cta:hover{filter:brightness(1.12)}
+
 /* ---------- Modal ---------- */
 dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:440px;width:92vw;max-height:88vh;overflow-y:auto;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(0,0,0,.6)}
 dialog::backdrop{background:rgba(4,8,12,.7);backdrop-filter:blur(2px)}
@@ -1593,30 +1609,31 @@ function renderBest(){
   const ano=s=>s?' '+(new Date(s)).getFullYear():'';
 
   let items=[
-   {nm:'Tesouro Selic'+ano(tdSelic&&tdSelic.mat),tx:`Selic ${fmtTx(selic)}% a.a.${tdSelic?` + ${fmtTx(tdSelic.rate)}%`:''}`,
-    v:liqIR(selic+(tdSelic?tdSelic.rate:0)),badges:['Tesouro Nacional','Liquidez diária'],live:!!tdSelic,
-    uso:'Reserva de emergência e dinheiro que pode ser sacado a qualquer momento',perfis:['conservador','moderado','arrojado']},
-   {nm:'CDB de liquidez diária (100% do CDI)',tx:`${fmtTx(cdi)}% a.a.`,v:liqIR(cdi),
+   {tag:'IDEAL PARA A RESERVA',t1:'Tesouro Selic',t2:tdSelic?String(new Date(tdSelic.mat).getFullYear()):'Selic',
+    tx:`Selic ${fmtTx(selic)}% a.a.${tdSelic?` + ${fmtTx(tdSelic.rate)}%`:''}`,
+    v:liqIR(selic+(tdSelic?tdSelic.rate:0)),badges:['Tesouro Nacional','Liquidez diária'],live:!!tdSelic,link:1,
+    uso:'Invista o dinheiro que pode precisar sacar a qualquer momento, sem sustos.',perfis:['conservador','moderado','arrojado']},
+   {tag:'RESERVA · ALTERNATIVA',t1:'CDB liquidez diária',t2:'100% CDI',tx:`${fmtTx(cdi)}% a.a.`,v:liqIR(cdi),
     badges:['Garantia FGC até R$ 250 mil','Liquidez diária'],
-    uso:'Alternativa ao Tesouro Selic para a reserva — bancos médios via corretora costumam pagar 100% ou mais',perfis:['conservador','moderado','arrojado']},
-   {nm:'LCI / LCA (≈90% do CDI)',tx:`${fmtTx(cdi*0.9)}% a.a. já líquidos`,v:gross(cdi*0.9),
-    badges:['Isenta de IR','Garantia FGC','Carência ≈90 dias ou mais'],
-    uso:'Curto e médio prazo quando o dinheiro pode ficar parado até o vencimento',perfis:['conservador','moderado','arrojado']},
-   {nm:'CDB com vencimento (≈115% do CDI)',tx:`${fmtTx(cdi*1.15)}% a.a.`,v:liqIR(cdi*1.15),
+    uso:'Bancos médios via corretora costumam pagar 100% do CDI ou mais na liquidez diária.',perfis:['conservador','moderado','arrojado']},
+   {tag:'ISENTA DE IMPOSTO DE RENDA',t1:'LCI / LCA',t2:'90% CDI',tx:`${fmtTx(cdi*0.9)}% a.a. já líquidos`,v:gross(cdi*0.9),
+    badges:['Isenta de IR','Garantia FGC','Carência ≈90 dias+'],
+    uso:'Invista o dinheiro que pode ficar parado até o vencimento e leve tudo sem desconto.',perfis:['conservador','moderado','arrojado']},
+   {tag:'MÉDIO PRAZO',t1:'CDB com vencimento',t2:'115% CDI',tx:`${fmtTx(cdi*1.15)}% a.a.`,v:liqIR(cdi*1.15),
     badges:['Garantia FGC','Sem resgate antes do vencimento'],
-    uso:'Médio prazo com vencimento casado com o objetivo (ex.: caixinha com data)',perfis:['conservador','moderado','arrojado']},
-   {nm:'Tesouro Prefixado'+(tdPre?ano(tdPre.mat):' (taxa estimada)'),tx:`${fmtTx(preRate)}% a.a. fixos`,v:liqIR(preRate),
-    badges:['Tesouro Nacional','Oscila antes do vencimento'],live:!!tdPre,
-    uso:'Travar a taxa de hoje apostando na queda dos juros — o ideal é levar até o vencimento',perfis:['moderado','arrojado']},
-   {nm:'Tesouro IPCA+'+ano(tdIpca&&tdIpca.mat),tx:`IPCA + ${fmtTx(realRate)}% a.a.`,v:liqIR(ipcaNom),
-    badges:['Tesouro Nacional','Protege da inflação'],live:!!tdIpca,
-    uso:'Longo prazo e aposentadoria — juro real garantido acima da inflação',perfis:['conservador','moderado','arrojado']},
-   {nm:'Fundos multimercado e FIIs',tx:'retorno variável',v:null,
+    uso:'Case o vencimento com a data do seu objetivo e ganhe mais pelo compromisso.',perfis:['conservador','moderado','arrojado']},
+   {tag:'TRAVA A TAXA DE HOJE',t1:'Tesouro Prefixado',t2:tdPre?String(new Date(tdPre.mat).getFullYear()):'Pré',
+    tx:`${fmtTx(preRate)}% a.a. fixos`,v:liqIR(preRate),badges:['Tesouro Nacional','Oscila antes do vencimento'],live:!!tdPre,link:1,
+    uso:'Garanta a taxa de hoje apostando na queda dos juros — ideal levar até o vencimento.',perfis:['moderado','arrojado']},
+   {tag:'PROTEÇÃO CONTRA A INFLAÇÃO',t1:'Tesouro IPCA+',t2:tdIpca?String(new Date(tdIpca.mat).getFullYear()):'IPCA+',
+    tx:`IPCA + ${fmtTx(realRate)}% a.a.`,v:liqIR(ipcaNom),badges:['Tesouro Nacional','Juro real garantido'],live:!!tdIpca,link:1,
+    uso:'Invista para fazer seu dinheiro crescer sem perder para a inflação.',perfis:['conservador','moderado','arrojado']},
+   {tag:'DIVERSIFICAÇÃO',t1:'Multimercado & FIIs',t2:'Fundos',tx:'retorno variável',v:null,
     badges:['Risco intermediário','Compare a taxa de administração'],
-    uso:'Diversificação além da renda fixa, na fatia indicada pela alocação acima',perfis:['moderado','arrojado']},
-   {nm:'Ações e ETFs (ex.: BOVA11, IVVB11)',tx:'retorno variável',v:null,
-    badges:['Maior oscilação','Horizonte de 5+ anos'],
-    uso:'Parcela de crescimento de longo prazo — aportes regulares, sem tentar acertar o momento',perfis:['moderado','arrojado']},
+    uso:'Vá além da renda fixa na fatia indicada pela sua alocação.',perfis:['moderado','arrojado']},
+   {tag:'CRESCIMENTO · 5+ ANOS',t1:'Ações & ETFs',t2:'Bolsa',tx:'retorno variável',v:null,
+    badges:['Maior oscilação','Aportes regulares'],
+    uso:'A parcela de crescimento de longo prazo — ex.: BOVA11, IVVB11.',perfis:['moderado','arrojado']},
   ].filter(x=>x.perfis.includes(perfil));
 
   /* ofertas registradas pelo usuário entram na disputa */
@@ -1624,10 +1641,11 @@ function renderBest(){
     const isento=/LCI|LCA/.test(o.produto);
     const nominal=o.modo==='cdi'?cdi*o.taxa/100:o.modo==='pre'?o.taxa:((1+ipca/100)*(1+o.taxa/100)-1)*100;
     const lblTx=o.modo==='cdi'?`${fmtTx(o.taxa)}% do CDI = ${fmtTx(nominal)}% a.a.`:o.modo==='pre'?`${fmtTx(o.taxa)}% a.a. fixos`:`IPCA + ${fmtTx(o.taxa)}% a.a.`;
-    const vencNota=o.prazo?(o.prazo<m?`atenção: vence em ${o.prazo} meses, antes do seu prazo de ${m} — o dinheiro precisará ser reinvestido`:`vencimento em ${o.prazo} meses`):'liquidez diária';
-    items.push({nm:`${o.produto} ${o.banco}`,tx:lblTx,v:isento?gross(nominal):liqIR(nominal),
-      badges:[`Banco segmento ${segDe(o.banco)}`,isento?'Isenta de IR':'IR regressivo','FGC até R$ 250 mil por CPF/banco','sua oferta'],
-      uso:`Oferta registrada por você · ${vencNota}`,perfis:[perfil]});
+    const vencNota=o.prazo?(o.prazo<m?`Atenção: vence em ${o.prazo} meses, antes do seu prazo de ${m} — será preciso reinvestir.`:`Vencimento em ${o.prazo} meses, dentro do seu prazo.`):'Liquidez diária.';
+    items.push({tag:`SUA OFERTA · BANCO ${segDe(o.banco)}`,t1:esc(o.produto),t2:esc(o.banco),tx:lblTx,
+      v:isento?gross(nominal):liqIR(nominal),
+      badges:[isento?'Isenta de IR':'IR regressivo','FGC até R$ 250 mil por CPF/banco'],
+      uso:vencNota,perfis:[perfil]});
   }
 
   items.sort((a,b)=>(b.v??-1)-(a.v??-1));
@@ -1635,16 +1653,18 @@ function renderBest(){
   $('tdInfo').innerHTML=(cdiReal!==null?`CDI real do BCB: <strong>${fmtTx(cdi)}% a.a.</strong> · `:'')+(aoVivo
     ?`Taxas do Tesouro carregadas ao vivo em ${new Date(state.cenario.tdWhen).toLocaleDateString('pt-BR')}${state.cenario.tdFonte?` (${state.cenario.tdFonte})`:''} — cada família usa o papel com vencimento mais próximo do seu prazo.`
     :`Usando <strong>taxas de referência de ${TD_REF.when.split('-').reverse().join('/')}</strong> embutidas no app (o site do Tesouro vem bloqueando consultas externas). Toque no botão para tentar atualizar ao vivo.`);
-  $('bestBox').innerHTML=items.map((x,i)=>`
-    <div class="goal" ${i===0?'style="border-color:var(--green);border-left:5px solid var(--green)"':''}>
-      <div class="top"><h3>${i===0?'★ ':''}${x.nm}</h3>
-        <span class="nums">${x.v?`${fmt(x.v)} em ${m} meses · <strong style="color:var(--green)">+${((x.v/P-1)*100).toFixed(1)}%</strong> líquidos`:'sem projeção — renda variável'}</span></div>
-      <p class="meta"><strong>${x.tx}</strong> · ${x.uso}</p>
-      <div class="acts">${x.live?(aoVivo?'<span class="chip" style="border-color:var(--green);color:var(--green)">taxa real</span>':'<span class="chip" style="border-color:var(--gold);color:var(--gold)">referência 05/06</span>'):''}${x.badges.map(b=>`<span class="chip">${b}</span>`).join(' ')}</div>
-    </div>`).join('')
-    +`<div class="goal" style="opacity:.65"><div class="top"><h3>Poupança (só para comparar)</h3>
-      <span class="nums">${fmt(poupV)} em ${m} meses · +${((poupV/P-1)*100).toFixed(1)}%</span></div>
-      <p class="meta">${fmtTx(poup)}% a.a. isentos — repare quanto se perde em relação às opções acima.</p></div>`;
+  $('bestBox').innerHTML='<div class="prods">'+items.map((x,i)=>`
+    <div class="prod${i===0?' top':''}">
+      <div class="prod-tag">${i===0?'★ MELHOR RESULTADO NO SEU PRAZO':x.tag}</div>
+      <div class="prod-name">${x.t1}</div>
+      <div class="prod-year">${x.t2}</div>
+      <div class="prod-row"><span class="ic">📈</span><div><b>Rentabilidade</b>${x.tx}</div></div>
+      <div class="prod-row"><span class="ic">💰</span><div><b>${fmt(P)} em ${m} meses</b>${x.v?`${fmt(x.v)} · <span style="color:var(--green);font-weight:600">+${((x.v/P-1)*100).toFixed(1)}% líquidos</span>`:'retorno variável — sem projeção'}</div></div>
+      <div class="prod-row"><span class="ic" style="color:var(--green)">✓</span><div>${x.uso}</div></div>
+      <div class="prod-badges">${x.live?(aoVivo?'<span class="chip" style="border-color:var(--green);color:var(--green)">taxa real</span>':'<span class="chip" style="border-color:var(--gold);color:var(--gold)">referência 05/06</span>'):''} ${x.badges.map(b=>`<span class="chip">${b}</span>`).join(' ')}</div>
+      ${x.link?'<a class="prod-cta" href="https://www.tesourodireto.com.br" target="_blank" rel="noopener">INVESTIR NO TESOURO DIRETO</a>':'<div style="height:.8rem"></div>'}
+    </div>`).join('')+'</div>'
+    +`<p class="muted" style="margin-top:.95rem">Poupança, só para comparar: ${fmt(poupV)} em ${m} meses (+${((poupV/P-1)*100).toFixed(1)}%) — ${fmtTx(poup)}% a.a. isentos, bem abaixo de todas as opções acima.</p>`;
   $('bestNote').textContent=`Projeções para ${fmt(P)} em ${m} meses, líquidas de IR regressivo (alíquota de ${irPct}% para esse prazo; LCI/LCA e poupança são isentas). Não incluem taxa de custódia da B3 (0,20% a.a. — o Tesouro Selic é isento até R$ 10 mil) nem variações de mercado em caso de venda antecipada. Taxas de CDB/LCI são referências típicas de mercado — confira as ofertas reais na sua corretora.`;
 }
 $('simVal').oninput=renderBest; $('simMeses').oninput=renderBest;
