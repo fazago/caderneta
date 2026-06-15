@@ -449,7 +449,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
   <section class="tab" id="tab-auto">
     <div class="card" style="margin-bottom:1.1rem">
       <h2>Contas fixas <button class="btn btn-primary sm" id="btnNewFixed">+ Nova conta fixa</button></h2>
-      <p class="muted" style="margin-bottom:1rem">Aluguel, energia, internet, mensalidades, salário… O sistema lança tudo automaticamente como <strong>pendente</strong> no início de cada mês — você só marca o ✓ quando pagar ou receber.</p>
+      <p class="muted" style="margin-bottom:1rem">Aluguel, energia, mensalidades, salário… Defina <strong>por quantos meses</strong> a conta se repete (até 60) e o sistema <strong>já agenda todas as parcelas</strong> como pendentes nos meses futuros. Você só marca o ✓ ao pagar. Contas sem prazo definido são lançadas mês a mês.</p>
       <div id="fixedList"></div>
       <div style="margin-top:.8rem"><button class="btn btn-ghost sm" id="btnApplyFixed">Lançar fixas no mês exibido</button></div>
     </div>
@@ -576,7 +576,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       </div></details>
 
       <details><summary>🔁 Contas fixas</summary><div class="hb">
-        Em <b>Contas &amp; Docs</b>, cadastre cada conta recorrente com dia de vencimento. Ao abrir o app em um novo mês, elas são lançadas automaticamente como pendentes (sem duplicar). Use <b>⏸</b> para pausar temporariamente, ✎ para reajustes, e o botão <b>"Lançar fixas no mês exibido"</b> para planejar meses futuros.
+        Em <b>Contas &amp; Docs</b>, cadastre cada conta recorrente com dia de vencimento, mês de início e <b>por quantos meses ela se repete</b> (até 60). O sistema <b>já insere todas as parcelas futuras</b> como pendentes — útil para financiamentos, mensalidades e assinaturas com prazo. O chip azul mostra quantos meses faltam; o botão <b>📅</b> prorroga o período, <b>⏸</b> pausa, ✎ reajusta. Contas marcadas como <b>contínuas</b> (sem prazo) são lançadas mês a mês ao abrir o app.
       </div></details>
 
       <details><summary>🧾 Boletos e faturas (criar conta a pagar)</summary><div class="hb">
@@ -680,6 +680,14 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
     <div class="field"><label for="fxVal">Valor (R$)</label><input id="fxVal" inputmode="decimal" placeholder="0,00"></div>
     <div class="field"><label for="fxDay">Dia do vencimento</label><input id="fxDay" type="number" min="1" max="31" value="5"></div>
     <div class="field"><label for="fxCat">Categoria</label><select id="fxCat"></select></div>
+    <div class="field"><label for="fxStart">Começa em</label><input id="fxStart" type="month"></div>
+    <div class="field"><label for="fxMonths">Repetir por quantos meses</label>
+      <select id="fxMonths">
+        <option value="0">Sem fim definido (lança mês a mês)</option>
+        <option value="6">6 meses</option><option value="12" selected>12 meses (1 ano)</option>
+        <option value="24">24 meses (2 anos)</option><option value="36">36 meses (3 anos)</option>
+        <option value="48">48 meses (4 anos)</option><option value="60">60 meses (5 anos)</option>
+      </select></div>
     <div class="modal-actions">
       <button class="btn btn-ghost" id="fxCancel">Cancelar</button>
       <button class="btn btn-primary" id="fxSave">Salvar</button>
@@ -1140,19 +1148,43 @@ function renderFixed(){
     <th>Dia</th><th>Descrição</th><th>Categoria</th><th style="text-align:right">Valor</th><th></th></tr></thead><tbody>`+
     state.fixed.slice().sort((a,b)=>a.day-b.day).map(f=>`<tr class="${f.active?'':'pend'}">
       <td style="font-family:var(--mono)">${String(f.day).padStart(2,'0')}</td>
-      <td>${esc(f.desc)}${f.active?'':' <span class="chip">pausada</span>'}</td>
+      <td>${esc(f.desc)}${f.active?'':' <span class="chip">pausada</span>'}${f.months>0?` <span class="chip" style="border-color:var(--blue);color:var(--blue)">${fixedRestante(f)}</span>`:' <span class="chip">contínua</span>'}</td>
       <td><span class="chip"><span class="dot" style="background:${catColor(f.cat,f.type)}"></span>${f.cat}</span></td>
       <td class="val ${f.type==='receita'?'in':'out'}">${f.type==='receita'?'+':'−'} ${fmt(f.value)}</td>
       <td><div class="row-actions">
+        ${f.months>0?`<button class="icon-btn" title="Prorrogar período" onclick="fixedProrrogar('${f.id}')">📅</button>`:''}
         <button class="icon-btn" title="${f.active?'Pausar':'Reativar'}" onclick="fixedToggle('${f.id}')">${f.active?'⏸':'▶'}</button>
         <button class="icon-btn" title="Editar" onclick="fixedEdit('${f.id}')">✎</button>
         <button class="icon-btn" title="Excluir" onclick="fixedDel('${f.id}')">🗑</button>
       </div></td></tr>`).join('')+'</tbody></table></div>';
 }
+function fixedMonths(f){
+  /* lista de YYYY-MM que a fixa cobre. months=0 → só o mês de início (modo mês a mês cobre o resto ao abrir o app) */
+  const start=f.start||ym(new Date());
+  const n=f.months&&f.months>0?f.months:1;
+  const [y,mo]=start.split('-').map(Number);
+  const out=[];
+  for(let i=0;i<n;i++){ const d=new Date(y,mo-1+i,1); out.push(ym(d)); }
+  return out;
+}
+function scheduleFixed(id){
+  const f=state.fixed.find(x=>x.id===id); if(!f||!f.active) return 0;
+  let n=0;
+  for(const k of fixedMonths(f)){
+    if(state.transactions.some(t=>t.fixedId===f.id && t.date.slice(0,7)===k)) continue;
+    const dim=new Date(+k.slice(0,4),+k.slice(5,7),0).getDate();
+    state.transactions.push({id:uid(),fixedId:f.id,type:f.type,desc:f.desc,cat:f.cat,value:f.value,
+      date:`${k}-${String(Math.min(f.day,dim)).padStart(2,'0')}`,paid:false});
+    n++;
+  }
+  if(n) save();
+  return n;
+}
 function applyFixed(k,silent){
   let n=0; const dim=new Date(+k.slice(0,4),+k.slice(5,7),0).getDate();
   for(const f of state.fixed){
     if(!f.active) continue;
+    if(f.months&&f.months>0) continue; // período já agendado por scheduleFixed
     if(state.transactions.some(t=>t.fixedId===f.id && t.date.slice(0,7)===k)) continue;
     state.transactions.push({id:uid(),fixedId:f.id,type:f.type,desc:f.desc,cat:f.cat,value:f.value,
       date:`${k}-${String(Math.min(f.day,dim)).padStart(2,'0')}`,paid:false});
@@ -1162,7 +1194,21 @@ function applyFixed(k,silent){
   if(!silent) toast(n?`${n} lançamento(s) fixo(s) criado(s) como pendentes`:'As fixas deste mês já estavam lançadas');
   return n;
 }
-window.fixedToggle=id=>{ const f=state.fixed.find(f=>f.id===id); if(f){f.active=!f.active; save(); renderFixed();} };
+function fixedRestante(f){
+  const meses=fixedMonths(f);
+  const fut=meses.filter(k=>k>=ym(new Date())).length;
+  const ult=meses[meses.length-1];
+  return fut>0?`${fut} mês(es) restante(s) · até ${ult.split('-').reverse().join('/')}`:`encerrada em ${ult.split('-').reverse().join('/')}`;
+}
+window.fixedProrrogar=id=>{
+  const f=state.fixed.find(f=>f.id===id); if(!f)return;
+  const add=parseInt(prompt(`Prorrogar "${f.desc}" por quantos meses a mais? (atual: ${f.months} meses, máximo 60 no total)`,'12')||'0');
+  if(!add||add<1)return;
+  f.months=Math.min((f.months||0)+add,60); save();
+  const n=scheduleFixed(id); renderAll();
+  toast(`Período prorrogado · ${n} nova(s) parcela(s) agendada(s)`);
+};
+window.fixedToggle=id=>{ const f=state.fixed.find(f=>f.id===id); if(f){f.active=!f.active; if(f.active)scheduleFixed(id); save(); renderFixed();} };
 window.fixedDel=id=>{ const f=state.fixed.find(f=>f.id===id);
   if(f&&confirm(`Excluir a conta fixa "${f.desc}"? Lançamentos já criados permanecem.`)){
     state.fixed=state.fixed.filter(x=>x.id!==id); save(); renderFixed(); toast('Conta fixa excluída'); } };
@@ -1174,10 +1220,12 @@ function setFixedTipo(t){ fixedTipo=t;
 window.fixedEdit=id=>{ const f=state.fixed.find(f=>f.id===id); if(!f)return;
   editFixedId=id; setFixedTipo(f.type);
   $('fxDesc').value=f.desc; $('fxVal').value=f.value.toFixed(2).replace('.',','); $('fxDay').value=f.day; $('fxCat').value=f.cat;
+  $('fxStart').value=f.start||ym(cur); $('fxMonths').value=String(f.months||0);
   $('fixedModalTitle').textContent='Editar conta fixa'; $('fixedModal').showModal();
 };
 $('btnNewFixed').onclick=()=>{ editFixedId=null; setFixedTipo('despesa');
   $('fxDesc').value='';$('fxVal').value='';$('fxDay').value=5;
+  $('fxStart').value=ym(cur); $('fxMonths').value='12';
   $('fixedModalTitle').textContent='Nova conta fixa'; $('fixedModal').showModal(); $('fxDesc').focus();
 };
 $('fxSegDesp').onclick=()=>setFixedTipo('despesa'); $('fxSegRec').onclick=()=>setFixedTipo('receita');
@@ -1185,10 +1233,15 @@ $('fxCancel').onclick=()=>$('fixedModal').close();
 $('fxSave').onclick=()=>{
   const desc=$('fxDesc').value.trim(), val=parseVal($('fxVal').value), day=Math.min(Math.max(+$('fxDay').value||1,1),31);
   if(!desc) return toast('Informe a descrição'); if(!val) return toast('Informe um valor válido');
-  const data={type:fixedTipo,desc,value:val,day,cat:$('fxCat').value,active:true};
-  if(editFixedId) Object.assign(state.fixed.find(f=>f.id===editFixedId),{...data,active:state.fixed.find(f=>f.id===editFixedId).active});
-  else state.fixed.push({id:uid(),...data});
-  save(); $('fixedModal').close(); renderFixed(); toast(editFixedId?'Conta fixa atualizada':'Conta fixa cadastrada');
+  const start=$('fxStart').value||ym(cur), months=Math.min(Math.max(+$('fxMonths').value||0,0),60);
+  const data={type:fixedTipo,desc,value:val,day,cat:$('fxCat').value,start,months,active:true};
+  let fid;
+  if(editFixedId){ fid=editFixedId; Object.assign(state.fixed.find(f=>f.id===editFixedId),{...data,active:state.fixed.find(f=>f.id===editFixedId).active}); }
+  else { fid=uid(); state.fixed.push({id:fid,...data}); }
+  save(); $('fixedModal').close();
+  const n=scheduleFixed(fid);
+  renderAll();
+  toast((editFixedId?'Conta fixa atualizada':'Conta fixa cadastrada')+(n?` · ${n} parcela(s) agendada(s)`:''));
 };
 $('btnApplyFixed').onclick=()=>applyFixed(ym(cur),false);
 
