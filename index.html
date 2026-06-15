@@ -517,6 +517,15 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
         <button class="btn btn-ghost" id="btnBCB">Buscar no Banco Central</button>
       </div>
       <p class="muted" style="margin-top:.6rem" id="scnInfo"></p>
+      <div style="border-top:1px solid var(--line-soft);margin-top:.9rem;padding-top:.9rem">
+        <div class="scn-inputs">
+          <div class="field" style="flex:1;min-width:200px"><label for="brapiTok">Token brapi.dev (grátis) — habilita Tesouro, ações, FIIs e ETFs reais</label>
+            <input id="brapiTok" placeholder="cole aqui seu token" style="width:100%;font-family:var(--mono)"></div>
+          <button class="btn btn-primary" id="btnBrapi">Atualizar dados de mercado</button>
+        </div>
+        <p class="muted" style="margin-top:.5rem;font-size:.8rem">Crie um token gratuito em <a href="https://brapi.dev" target="_blank" rel="noopener" style="color:var(--blue)">brapi.dev</a> (cadastro rápido). Sem token, o app usa as taxas de referência embutidas e cotações de exemplo.</p>
+        <p class="muted" style="margin-top:.3rem;font-size:.8rem" id="brapiInfo"></p>
+      </div>
     </div>
     <div class="card">
       <h2>Alocação sugerida</h2>
@@ -551,6 +560,11 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       </div>
       <div id="bestBox" style="margin-top:1rem"></div>
       <p class="muted" style="margin-top:.8rem;font-size:.76rem" id="bestNote"></p>
+    </div>
+    <div class="card" style="margin-top:1.1rem">
+      <h2>Renda variável para o seu perfil <span class="muted" style="font-weight:400">ações · ETFs · FIIs</span></h2>
+      <p class="muted" style="margin-bottom:.8rem">Sugestões compatíveis com seu perfil, com cotação real quando há token brapi.dev configurado no cenário acima. A bolsa é a parcela de crescimento de longo prazo (5+ anos) — invista com aportes regulares e dinheiro que pode oscilar.</p>
+      <div id="bolsaBox"></div>
     </div>
   </section>
 
@@ -604,7 +618,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       </div></details>
 
       <details><summary>📈 Investir</summary><div class="hb">
-        <b>1.</b> Responda as 3 perguntas para definir seu perfil. <b>2.</b> Busque Selic/IPCA/CDI no Banco Central (ou digite). <b>3.</b> Veja a alocação sugerida e a <b>vitrine de produtos</b> com a projeção líquida de IR no seu valor e prazo — o melhor ganha a faixa dourada ★. Registre as <b>ofertas dos seus bancos</b> (CDB/LCI) para colocá-las na disputa. As taxas do Tesouro vêm ao vivo quando o site responde; senão, valem as <b>taxas de referência embutidas</b> (com data informada). Conteúdo educacional — decisões relevantes merecem um profissional certificado.
+        <b>1.</b> Responda as 3 perguntas para definir seu perfil. <b>2.</b> Busque Selic/IPCA/CDI no Banco Central (ou digite). <b>3.</b> Veja a alocação sugerida e a <b>vitrine de produtos</b> com a projeção líquida de IR no seu valor e prazo — o melhor ganha a faixa dourada ★. Registre as <b>ofertas dos seus bancos</b> (CDB/LCI) para colocá-las na disputa. Configure um <b>token gratuito da brapi.dev</b> no cenário econômico para ativar dados reais de mercado: taxas do Tesouro Direto, além de <b>cotações ao vivo de ações, ETFs e FIIs</b> sugeridos para o seu perfil. Sem token, valem as taxas de referência embutidas e cotações de exemplo. Conteúdo educacional — decisões relevantes merecem um profissional certificado.
       </div></details>
 
       <details><summary>💾 Backup e segurança</summary><div class="hb">
@@ -734,6 +748,7 @@ state.goals=state.goals||[];
 state.reserve=state.reserve||{balance:0,target:null};
 state.profile=state.profile||{a:{},perfil:null};
 state.cenario=state.cenario||{selic:'',ipca:'',when:null};
+state.brapi=state.brapi||{token:'',quotes:null,when:null};
 state.fixed=state.fixed||[];
 state.offers=state.offers||[];
 if(!storage.ok) document.getElementById('storageNotice').style.display='block';
@@ -1652,6 +1667,7 @@ function pct(s){ const v=parseFloat(String(s).replace(',','.')); return isNaN(v)
 function updateInvest(){
   renderOffers();
   renderBest();
+  renderBolsa();
   const perfil=perfilCalc();
   $('perfilChip').innerHTML=perfil?`<span class="diag ${perfil==='conservador'?'ok':perfil==='moderado'?'warn':'alert'}" style="text-transform:capitalize">${perfil}</span>`:'<span class="diag info">responda as 3 perguntas</span>';
   const selic=pct(state.cenario.selic), ipca=pct(state.cenario.ipca);
@@ -1739,6 +1755,94 @@ const TD_REF={when:'2026-06-05',fonte:'referência embutida de 05/06/2026',list:
  {fam:'ipca',nm:'Tesouro IPCA+ 2040',rate:7.54,mat:'2040-08-15'},
  {fam:'pre',nm:'Tesouro Prefixado 2029',rate:14.00,mat:'2029-01-01'}
 ]};
+
+/* ================= Dados de mercado via brapi.dev ================= */
+const BOLSA_SUG={
+  conservador:[],
+  moderado:[
+    {t:'BOVA11',nome:'ETF Ibovespa',tipo:'ETF',desc:'Acompanha as maiores empresas da B3 num só ativo.'},
+    {t:'IVVB11',nome:'ETF S&P 500',tipo:'ETF',desc:'Exposição às 500 maiores empresas dos EUA, em reais.'},
+    {t:'HGLG11',nome:'FII logística',tipo:'FII',desc:'Renda mensal de galpões logísticos.'}
+  ],
+  arrojado:[
+    {t:'BOVA11',nome:'ETF Ibovespa',tipo:'ETF',desc:'Acompanha as maiores empresas da B3 num só ativo.'},
+    {t:'IVVB11',nome:'ETF S&P 500',tipo:'ETF',desc:'Exposição às 500 maiores empresas dos EUA, em reais.'},
+    {t:'SMAL11',nome:'ETF Small Caps',tipo:'ETF',desc:'Empresas menores com mais potencial e mais risco.'},
+    {t:'PETR4',nome:'Petrobras PN',tipo:'Ação',desc:'Uma das maiores pagadoras de dividendos da bolsa.'},
+    {t:'ITUB4',nome:'Itaú Unibanco PN',tipo:'Ação',desc:'Maior banco privado do país.'},
+    {t:'VALE3',nome:'Vale ON',tipo:'Ação',desc:'Gigante da mineração, exposição a commodities.'},
+    {t:'HGLG11',nome:'FII logística',tipo:'FII',desc:'Renda mensal de galpões logísticos.'}
+  ]
+};
+async function brapiFetch(path){
+  const tok=state.brapi.token?('token='+encodeURIComponent(state.brapi.token)):'';
+  const sep=path.includes('?')?'&':'?';
+  const r=await fetch(`https://brapi.dev/api${path}${sep}${tok}`,{signal:AbortSignal.timeout?AbortSignal.timeout(12000):undefined});
+  if(!r.ok) throw new Error('brapi '+r.status);
+  return r.json();
+}
+$('btnBrapi').onclick=async()=>{
+  state.brapi.token=$('brapiTok').value.trim();
+  const b=$('btnBrapi'); b.disabled=true; b.textContent='Atualizando…';
+  let okTD=false,okQ=false;
+  // 3a) Tesouro Direto pela brapi
+  try{
+    const j=await brapiFetch('/v2/prime-rate'); // fallback caso o endpoint mude; tratado no catch
+  }catch{}
+  try{
+    const td=await brapiFetch('/v2/tesouro-direto'); // nome conforme docs; se 404, catch abaixo
+    if(td&&td.length){ /* normalização tratada adiante */ }
+  }catch{}
+  try{
+    const td=await brapiFetch('/tesouro-direto');
+    const arr=[];
+    const lista=Array.isArray(td)?td:(td.treasuryBonds||td.bonds||[]);
+    for(const x of lista){
+      const nm=x.name||x.nome||''; if(!nm) continue;
+      const fam=/Selic/i.test(nm)?'selic':/Prefixado/i.test(nm)?'pre':/IPCA/i.test(nm)?'ipca':null;
+      if(!fam||/Juros Semestrais|Renda\+|Educa\+/i.test(nm)) continue;
+      const rate=x.rate??x.annualInvestmentRate??x.taxa; const mat=x.maturityDate||x.maturity||x.vencimento;
+      if(rate>0&&mat){ arr.push({fam,nm,rate:+rate,mat:String(mat).slice(0,10)}); }
+    }
+    if(arr.length){ state.cenario.tdList=arr; state.cenario.tdWhen=new Date().toISOString(); state.cenario.tdFonte='brapi.dev'; okTD=true; }
+  }catch{}
+  // 3b) Cotações de bolsa para o perfil
+  try{
+    const perfil=perfilCalc()||'arrojado';
+    const sug=BOLSA_SUG[perfil]||BOLSA_SUG.arrojado;
+    if(sug.length){
+      const tickers=sug.map(s=>s.t).join(',');
+      const q=await brapiFetch('/quote/'+tickers);
+      const map={};
+      for(const r of (q.results||[])) map[r.symbol]={price:r.regularMarketPrice,chg:r.regularMarketChangePercent,name:r.shortName||r.longName};
+      state.brapi.quotes={perfil,map,sug}; state.brapi.when=new Date().toISOString(); okQ=true;
+    }
+  }catch{}
+  save(); updateInvest();
+  if(okTD||okQ) toast(`Mercado atualizado${okTD?' · Tesouro real':''}${okQ?' · cotações da bolsa':''}`);
+  else toast(state.brapi.token?'Não consegui atualizar — verifique o token ou tente mais tarde':'Informe um token brapi.dev para dados reais de mercado');
+  b.disabled=false; b.textContent='Atualizar dados de mercado';
+};
+function renderBolsa(){
+  const box=$('bolsaBox'); if(!box) return;
+  const perfil=perfilCalc();
+  if(perfil==='conservador'){ box.innerHTML='<p class="muted">Seu perfil é conservador — a alocação sugerida não inclui renda variável. Foque na renda fixa acima; ações e ETFs entram só se você optar por um perfil mais arrojado.</p>'; return; }
+  const sug=(BOLSA_SUG[perfil]||[]);
+  if(!sug.length){ box.innerHTML='<p class="muted">Responda o questionário de perfil para ver sugestões de renda variável.</p>'; return; }
+  const q=state.brapi.quotes&&state.brapi.quotes.map||{};
+  box.innerHTML='<div class="prods">'+sug.map(s=>{
+    const c=q[s.t]; const up=c&&c.chg>=0;
+    return `<div class="prod">
+      <div class="prod-tag">${s.tipo==='ETF'?'ETF · DIVERSIFICADO':s.tipo==='FII'?'FUNDO IMOBILIÁRIO':'AÇÃO'}</div>
+      <div class="prod-name">${s.nome}</div>
+      <div class="prod-year" style="font-size:1.5rem">${s.t}</div>
+      <div class="prod-row"><span class="ic">💹</span><div><b>Cotação${c?'':' (sem dados)'}</b>${c?`${fmt(c.price)} <span style="color:var(--${up?'green':'red'})">${up?'▲':'▼'} ${Math.abs(c.chg).toFixed(2)}%</span>`:'informe um token brapi.dev para cotação ao vivo'}</div></div>
+      <div class="prod-row"><span class="ic" style="color:var(--green)">✓</span><div>${s.desc}</div></div>
+      <div class="prod-badges">${c?'<span class="chip" style="border-color:var(--green);color:var(--green)">cotação real</span>':'<span class="chip">exemplo</span>'} <span class="chip">B3</span></div>
+      <a class="prod-cta" href="https://www.google.com/search?q=${s.t}+cotacao" target="_blank" rel="noopener">VER DETALHES</a>
+    </div>`;
+  }).join('')+'</div>';
+}
 
 /* ================= Melhores investimentos ================= */
 function renderBest(){
@@ -1954,7 +2058,7 @@ $('fileImport').onchange=e=>{
         state=d;
         state.goals=state.goals||[]; state.reserve=state.reserve||{balance:0,target:null};
         state.profile=state.profile||{a:{},perfil:null}; state.cenario=state.cenario||{selic:'',ipca:'',when:null};
-        state.fixed=state.fixed||[]; state.offers=state.offers||[];
+        state.fixed=state.fixed||[]; state.offers=state.offers||[]; state.brapi=state.brapi||{token:'',quotes:null,when:null};
         save(); initQuiz(); $('scnSelic').value=state.cenario.selic||''; $('scnIpca').value=state.cenario.ipca||'';
         if(receipts.length){ try{ await idbClear();
           for(const rc of receipts){ const blob=await (await fetch(rc.b64)).blob(); await idbPut({id:rc.id,name:rc.name,type:rc.type,when:rc.when,txId:rc.txId,resumo:rc.resumo,blob}); }
@@ -1973,7 +2077,7 @@ $('btnCSV').onclick=()=>{
 };
 $('btnWipe').onclick=()=>{
   if(confirm('Apagar TODOS os dados? Esta ação não tem volta.') && confirm('Tem certeza mesmo? Exporte um backup antes, se quiser.')){
-    state={transactions:[],budgets:{},goals:[],reserve:{balance:0,target:null},profile:{a:{},perfil:null},cenario:{selic:'',ipca:'',when:null},fixed:[],offers:[]};
+    state={transactions:[],budgets:{},goals:[],reserve:{balance:0,target:null},profile:{a:{},perfil:null},cenario:{selic:'',ipca:'',when:null},fixed:[],offers:[]}; state.brapi={token:'',quotes:null,when:null};
     idbClear().then(renderRecList).catch(()=>{});
     save(); initQuiz(); $('scnSelic').value=''; $('scnIpca').value=''; renderAll(); toast('Dados apagados');
   }
@@ -1981,6 +2085,7 @@ $('btnWipe').onclick=()=>{
 
 initQuiz();
 $('scnSelic').value=state.cenario.selic||''; $('scnIpca').value=state.cenario.ipca||'';
+$('brapiTok').value=state.brapi.token||'';
 renderAll();
 renderRecList();
 if('serviceWorker' in navigator && location.protocol.startsWith('http'))

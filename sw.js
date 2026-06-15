@@ -1,5 +1,5 @@
 /* Caderneta — service worker: deixa o app abrir offline e acelera o carregamento */
-const CACHE = 'caderneta-v9';
+const CACHE = 'caderneta-v10';
 const SHELL = ['./', './index.html', './manifest.json', './icon-192.png', './icon-512.png'];
 
 self.addEventListener('install', e => {
