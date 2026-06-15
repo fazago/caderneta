@@ -235,6 +235,19 @@ nav.tabs button:nth-child(9){animation-delay:.45s}
 .prod-cta{display:block;background:var(--gold);color:#1A1400;text-align:center;font-weight:800;font-family:var(--display);letter-spacing:.07em;font-size:.84rem;padding:.85rem;margin:.6rem 1rem 1rem;border-radius:999px;text-decoration:none;transition:filter .15s}
 .prod-cta:hover{filter:brightness(1.12)}
 
+
+/* ---------- Ajuda ---------- */
+.help details{border:1px solid var(--line);border-radius:10px;background:var(--panel);margin-bottom:.7rem;overflow:hidden}
+.help summary{cursor:pointer;padding:.95rem 1rem;font-family:var(--display);font-weight:600;font-size:1.02rem;list-style:none;display:flex;gap:.6rem;align-items:center}
+.help summary::-webkit-details-marker{display:none}
+.help summary::after{content:'+';margin-left:auto;color:var(--green);font-size:1.3rem;font-family:var(--mono)}
+.help details[open] summary::after{content:'−'}
+.help .hb{padding:0 1rem 1rem;color:var(--ink-soft);font-size:.95rem;line-height:1.65}
+.help .hb b{color:var(--ink)}
+.help .hb ol,.help .hb ul{margin:.4rem 0 .4rem 1.2rem}
+.mod:nth-child(9){animation-delay:.66s}
+nav.tabs button:nth-child(10){animation-delay:.5s}
+
 /* ---------- Modal ---------- */
 dialog{border:1px solid var(--line);border-radius:12px;padding:0;max-width:440px;width:92vw;max-height:88vh;overflow-y:auto;background:var(--card);color:var(--ink);box-shadow:0 24px 80px rgba(0,0,0,.6)}
 dialog::backdrop{background:rgba(4,8,12,.7);backdrop-filter:blur(2px)}
@@ -343,6 +356,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       <button data-tab="caixa">Caixinhas</button>
       <button data-tab="invest">Investir</button>
       <button data-tab="backup">Backup</button>
+      <button data-tab="ajuda">Ajuda</button>
     </nav>
   </div>
 </header>
@@ -378,6 +392,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
         <button class="mod" onclick="goTab('caixa')"><span>🐷</span><b>Caixinhas</b><small>reserva e objetivos</small></button>
         <button class="mod" onclick="goTab('invest')"><span>📈</span><b>Investir</b><small>perfil, cenário e ranking</small></button>
         <button class="mod" onclick="goTab('backup')"><span>💾</span><b>Backup</b><small>exportar e importar tudo</small></button>
+        <button class="mod" onclick="goTab('ajuda')"><span>❓</span><b>Ajuda</b><small>como usar cada função</small></button>
       </div>
     </div>
   </section>
@@ -447,7 +462,7 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
     </div>
     <div class="card" style="margin-top:1.1rem">
       <h2>Documentos — boletos, contas e comprovantes</h2>
-      <p class="muted" style="margin-bottom:.8rem"><strong>Cadastrar conta a pagar:</strong> envie o boleto ou a fatura (PDF ou foto — conta de energia, água, cartão…) e o sistema lê a <strong>linha digitável</strong>, extrai valor e vencimento, identifica o emissor e cria o lançamento pendente já com o documento anexado.<br><strong>Dar baixa:</strong> depois de pagar, envie o comprovante e ele localiza o pendente, quita e arquiva. Fotos usam OCR (internet na primeira leitura).</p>
+      <p class="muted" style="margin-bottom:.8rem"><strong>Cadastrar conta a pagar:</strong> envie o boleto ou a fatura (PDF ou foto — conta de energia, água, cartão…) e o sistema lê a <strong>linha digitável</strong>, extrai valor e vencimento, identifica o emissor e cria o lançamento pendente já com o documento anexado.<br><strong>Dar baixa ou criar despesa:</strong> depois de pagar, envie o comprovante — ele localiza o pendente e quita, ou, se a despesa não existia, <strong>cria o lançamento já pago</strong> com o saldo ajustado na hora. Fotos usam OCR (internet na primeira leitura).</p>
       <div style="display:flex;gap:.6rem;flex-wrap:wrap">
         <button class="btn btn-primary" id="btnPickBoleto">Cadastrar conta (boleto/fatura)</button>
         <button class="btn btn-ghost" id="btnPickRec">Dar baixa (comprovante)</button>
@@ -536,6 +551,69 @@ input[type=checkbox],input[type=radio]{accent-color:var(--green)}
       </div>
       <div id="bestBox" style="margin-top:1rem"></div>
       <p class="muted" style="margin-top:.8rem;font-size:.76rem" id="bestNote"></p>
+    </div>
+  </section>
+
+  <!-- AJUDA -->
+  <section class="tab" id="tab-ajuda">
+    <div class="card help">
+      <h2>Como usar a Caderneta</h2>
+      <p class="muted" style="margin-bottom:1rem">Toque em cada tema para abrir as instruções. Lembre-se: <b>todos os seus dados ficam só neste aparelho</b> — nada é enviado para a internet.</p>
+
+      <details open><summary>🚀 Primeiros passos</summary><div class="hb">
+        <ol><li>Cadastre suas <b>receitas fixas</b> (salário) e <b>contas fixas</b> (aluguel, energia…) em <b>Contas &amp; Docs</b> — elas serão lançadas sozinhas todo mês como pendentes.</li>
+        <li>Defina os <b>limites por categoria</b> em Orçamento.</li>
+        <li>No dia a dia, use as <b>ações rápidas</b> do Início: lançar despesa/receita, cadastrar boleto, dar baixa com comprovante.</li>
+        <li>Confira o <b>Diagnóstico do mês</b> no Início e as recomendações no Orientador.</li></ol>
+      </div></details>
+
+      <details><summary>🏠 Navegação</summary><div class="hb">
+        No celular, use a <b>barra inferior</b>: Início, Lançamentos, ➕ (novo lançamento), Contas e Caixinhas — os demais módulos ficam na grade do Início. O <b>botão Voltar do celular</b> fecha a janela aberta ou retorna ao Início. Tocar no logotipo <b>CADERNETA</b> também leva ao Início. As setas ‹ › no topo trocam o mês exibido em todo o app.
+      </div></details>
+
+      <details><summary>📋 Lançamentos</summary><div class="hb">
+        Toque em <b>➕</b> para registrar receita ou despesa (descrição, valor, data, categoria e se já foi paga). Na lista: <b>○/✓</b> alterna pendente/pago, <b>✎</b> edita, <b>🗑</b> exclui e <b>📎</b> abre o comprovante anexado. Use a busca e os filtros para localizar qualquer item. <b>Pendentes não entram no saldo</b> até a baixa.
+      </div></details>
+
+      <details><summary>🔁 Contas fixas</summary><div class="hb">
+        Em <b>Contas &amp; Docs</b>, cadastre cada conta recorrente com dia de vencimento. Ao abrir o app em um novo mês, elas são lançadas automaticamente como pendentes (sem duplicar). Use <b>⏸</b> para pausar temporariamente, ✎ para reajustes, e o botão <b>"Lançar fixas no mês exibido"</b> para planejar meses futuros.
+      </div></details>
+
+      <details><summary>🧾 Boletos e faturas (criar conta a pagar)</summary><div class="hb">
+        Toque em <b>Cadastrar conta (boleto/fatura)</b> e envie o PDF ou a foto. O sistema lê a <b>linha digitável</b> (valor e vencimento exatos), identifica o emissor e sugere a categoria — você confere o formulário e confirma. A conta entra como <b>pendente</b> na data do vencimento, com o boleto anexado, e o botão <b>Copiar linha digitável</b> agiliza o pagamento no app do banco.
+      </div></details>
+
+      <details><summary>✅ Comprovantes (dar baixa ou criar despesa)</summary><div class="hb">
+        Depois de pagar, toque em <b>Dar baixa (comprovante)</b> e envie o PDF do Pix/boleto ou uma foto. O sistema lê valor e data e mostra os <b>pendentes compatíveis</b> — um toque em "Dar baixa" quita e arquiva. <b>Se a despesa ainda não existia</b>, use o formulário <b>"Criar despesa direto deste comprovante"</b>: ela entra já paga, o saldo é ajustado na hora e o comprovante fica anexado. Tudo fica no <b>Arquivo de comprovantes</b>, no fim da tela.
+      </div></details>
+
+      <details><summary>🏦 Importar extrato do banco</summary><div class="hb">
+        No app do seu banco, exporte o extrato em <b>OFX</b> (preferível) ou CSV e selecione o arquivo. O sistema lista os lançamentos com categoria sugerida, marca os que <b>já existem</b> (desmarcados, para evitar duplicidade) e importa só o que você selecionar. PDF de extrato não é suportado — use OFX/CSV.
+      </div></details>
+
+      <details><summary>🎯 Orçamento</summary><div class="hb">
+        Defina o limite mensal de cada categoria. As barras mostram o consumo: <b>verde</b> dentro do limite, <b>âmbar</b> acima de 80%, <b>vermelha</b> estourado (com o valor excedente). O resumo aparece também na Visão geral, e o Orientador avisa quando alguma categoria pesa.
+      </div></details>
+
+      <details><summary>🧭 Orientador</summary><div class="hb">
+        Analisa o mês exibido e diz o que fazer: em <b>déficit</b>, aponta onde cortar (maiores gastos não essenciais) e como se proteger de juros; em <b>sobra</b>, sugere o destino 50/30/20 (reserva, objetivos, livre); e vigia pendências maiores que o caixa, ritmo de gastos acima da renda e variações fortes vs. o mês anterior.
+      </div></details>
+
+      <details><summary>🐷 Caixinhas e reserva de emergência</summary><div class="hb">
+        A <b>reserva</b> tem meta automática de 6 meses de despesas (ou um valor seu) com barra de progresso e sugestão de aporte mensal. Crie <b>caixinhas</b> para objetivos (carro, viagem…) com valor e prazo — o app calcula quanto guardar por mês. Deposite e resgate pelos botões; tudo aparece resumido na Visão geral.
+      </div></details>
+
+      <details><summary>📈 Investir</summary><div class="hb">
+        <b>1.</b> Responda as 3 perguntas para definir seu perfil. <b>2.</b> Busque Selic/IPCA/CDI no Banco Central (ou digite). <b>3.</b> Veja a alocação sugerida e a <b>vitrine de produtos</b> com a projeção líquida de IR no seu valor e prazo — o melhor ganha a faixa dourada ★. Registre as <b>ofertas dos seus bancos</b> (CDB/LCI) para colocá-las na disputa. As taxas do Tesouro vêm ao vivo quando o site responde; senão, valem as <b>taxas de referência embutidas</b> (com data informada). Conteúdo educacional — decisões relevantes merecem um profissional certificado.
+      </div></details>
+
+      <details><summary>💾 Backup e segurança</summary><div class="hb">
+        Os dados moram <b>somente neste aparelho</b>. Exporte o backup (.json) ao menos uma vez por mês — ele leva tudo, inclusive os comprovantes — e guarde no Drive/WhatsApp. Para usar em outro aparelho: Exportar no origem → Importar no destino. <b>Apagar todos os dados</b> é irreversível; exporte antes.
+      </div></details>
+
+      <details><summary>🔄 Atualizações do app</summary><div class="hb">
+        Quando houver versão nova, substitua <b>index.html</b> e <b>sw.js</b> no seu repositório do GitHub (Add file → Upload files → Commit). O app instalado se atualiza sozinho: feche e abra <b>duas vezes</b>. Seus dados permanecem — ficam no aparelho, não no código.
+      </div></details>
     </div>
   </section>
 
@@ -1287,8 +1365,14 @@ $('fileRec').onchange=async e=>{
   const file=e.target.files[0]; e.target.value=''; if(!file)return;
   $('recBox').innerHTML='<p class="muted">Lendo o comprovante…</p>';
   let parsed;
-  try{ parsed=parseReceipt(await extractReceiptText(file)); }
-  catch(err){ parsed={value:null,date:null,resumo:'(não foi possível ler o conteúdo — sem internet para carregar o leitor, ou arquivo sem texto; vincule manualmente abaixo)',tokens:''}; }
+  try{
+    const txt=await extractReceiptText(file);
+    parsed=parseReceipt(txt);
+    const b=parseBoleto(txt);
+    parsed.benef=b.beneficiario||'';
+    parsed.cat=guessCat(((b.beneficiario||'')+' '+txt).slice(0,400),'despesa');
+  }
+  catch(err){ parsed={value:null,date:null,resumo:'(não foi possível ler o conteúdo — sem internet para carregar o leitor, ou arquivo sem texto; preencha manualmente abaixo)',tokens:'',benef:'',cat:'Outros'}; }
   recPending={file,parsed};
   renderRecMatch();
 };
@@ -1310,10 +1394,35 @@ function renderRecMatch(){
     <div class="acts" style="margin-top:.8rem">
       ${pendOpts?`<select id="recManual" style="padding:.45rem;border:1px solid var(--line);border-radius:8px;max-width:100%">${pendOpts}</select>
       <button class="btn btn-ghost sm" onclick="recBaixaManual()">Dar baixa no selecionado</button>`:''}
-      <button class="btn btn-ghost sm" onclick="recArquivar()">Só arquivar</button>
-      <button class="btn btn-danger sm" onclick="recCancel()">Cancelar</button>
+    </div>
+    <div style="border-top:1px solid var(--line-soft);margin-top:.9rem;padding-top:.9rem">
+      <p style="font-size:.92rem;margin-bottom:.5rem"><strong>Ou crie a despesa direto deste comprovante</strong> <span class="muted">(entra como paga e o saldo é ajustado na hora)</span>:</p>
+      <div class="scn-inputs">
+        <div class="field"><label for="rcDesc">Descrição</label><input id="rcDesc" value="${esc(p.benef||'')}" placeholder="ex.: Energia CPFL" style="width:190px;font-family:var(--body)"></div>
+        <div class="field"><label for="rcVal">Valor (R$)</label><input id="rcVal" inputmode="decimal" value="${p.value!==null?p.value.toFixed(2).replace('.',','):''}"></div>
+        <div class="field"><label for="rcDate">Data do pagamento</label><input id="rcDate" type="date" value="${p.date||new Date().toISOString().slice(0,10)}"></div>
+        <div class="field"><label for="rcCat">Categoria</label><select id="rcCat">${CATS_DESP.map(c=>`<option ${c.n===(p.cat||'Outros')?'selected':''}>${c.n}</option>`).join('')}</select></div>
+      </div>
+      <div class="acts" style="margin-top:.6rem">
+        <button class="btn btn-primary sm" onclick="recCriarDespesa()">Criar despesa paga + arquivar</button>
+        <button class="btn btn-ghost sm" onclick="recArquivar()">Só arquivar</button>
+        <button class="btn btn-danger sm" onclick="recCancel()">Cancelar</button>
+      </div>
     </div></div>`;
 }
+window.recCriarDespesa=async()=>{
+  const desc=$('rcDesc').value.trim(), val=parseVal($('rcVal').value), date=$('rcDate').value;
+  if(!desc) return toast('Informe a descrição');
+  if(!val) return toast('Informe o valor');
+  if(!date) return toast('Informe a data');
+  const tx={id:uid(),type:'despesa',desc,cat:$('rcCat').value,value:val,date,paid:true};
+  try{ const id=await recStore(tx.id); tx.receiptId=id; }catch{}
+  state.transactions.push(tx);
+  recPending=null; $('recBox').innerHTML='';
+  if(date.slice(0,7)!==ym(cur)) cur=new Date(+date.slice(0,4),+date.slice(5,7)-1,1);
+  save(); renderAll(); renderRecList();
+  toast('Despesa criada como paga — saldo atualizado e comprovante arquivado 📎');
+};
 async function recStore(txId){
   const id=uid();
   await idbPut({id,name:recPending.file.name,type:recPending.file.type,when:new Date().toISOString(),
